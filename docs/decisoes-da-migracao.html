@@ -1,0 +1,2578 @@
+<title>Decisões da Migração</title>
+<style>
+  :root {
+    --paper:      #F2F4F3;
+    --surface:    #FFFFFF;
+    --surface-2:  #EAEEEC;
+    --ink:        #101A19;
+    --ink-2:      #4A5654;
+    --ink-3:      #6E7C79;
+    --line:       #D7DFDD;
+    --line-2:     #C3CECB;
+    --accent:     #0C5D55;
+    --accent-soft:#E1EDEA;
+    --brass:      #866514;
+    --brass-soft: #F0E9D6;
+    --good:       #1F6B45;
+    --warn:       #8A5A0B;
+    --crit:       #9B2C2C;
+
+    --sans: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Mono", Consolas, "SF Mono", "Roboto Mono", ui-monospace, monospace;
+
+    --step--1: 0.8125rem;
+    --step-0:  1rem;
+    --step-1:  1.1875rem;
+    --step-2:  1.4375rem;
+    --step-3:  1.875rem;
+    --step-4:  clamp(2.1rem, 1.6rem + 2.2vw, 3.1rem);
+
+    --gap: 1.5rem;
+    --radius: 3px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0D1413;
+      --surface:    #141D1C;
+      --surface-2:  #1B2524;
+      --ink:        #E7EEEC;
+      --ink-2:      #A2B0AD;
+      --ink-3:      #7E8C89;
+      --line:       #24302E;
+      --line-2:     #32403D;
+      --accent:     #4FD1BE;
+      --accent-soft:#12302C;
+      --brass:      #D4B054;
+      --brass-soft: #2A2415;
+      --good:       #5CC790;
+      --warn:       #E0A94A;
+      --crit:       #E87F77;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --paper:      #0D1413;
+    --surface:    #141D1C;
+    --surface-2:  #1B2524;
+    --ink:        #E7EEEC;
+    --ink-2:      #A2B0AD;
+    --ink-3:      #7E8C89;
+    --line:       #24302E;
+    --line-2:     #32403D;
+    --accent:     #4FD1BE;
+    --accent-soft:#12302C;
+    --brass:      #D4B054;
+    --brass-soft: #2A2415;
+    --good:       #5CC790;
+    --warn:       #E0A94A;
+    --crit:       #E87F77;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0 1.25rem 5rem;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 61rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  .prose { max-width: 64ch; }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+    margin: 0;
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  p { margin: 0; }
+
+  a { color: var(--accent); }
+
+  code, .mono {
+    font-family: var(--mono);
+    font-size: 0.92em;
+  }
+
+  code {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    padding: 0.05em 0.35em;
+    white-space: nowrap;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0;
+  }
+
+  /* ---------- cabeçalho ---------- */
+
+  .masthead {
+    padding-top: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2.25rem;
+  }
+
+  .masthead h1 {
+    font-size: var(--step-4);
+    font-weight: 650;
+    letter-spacing: -0.03em;
+  }
+
+  .masthead .lead {
+    font-size: var(--step-1);
+    color: var(--ink-2);
+    max-width: 58ch;
+  }
+
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-top: 0.5rem;
+  }
+
+  .tile {
+    background: var(--surface);
+    padding: 1rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .tile .num {
+    font-family: var(--mono);
+    font-size: var(--step-3);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+  }
+
+  .tile .num.open { color: var(--warn); }
+  .tile .num.zero { color: var(--crit); }
+
+  .tile .cap {
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    line-height: 1.35;
+  }
+
+  /* ---------- seções ---------- */
+
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
+  }
+
+  .sec-head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .sec-head h2 {
+    font-size: var(--step-2);
+    font-weight: 620;
+  }
+
+  /* ---------- requisitos ---------- */
+
+  .req-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+    gap: 1.25rem;
+  }
+
+  .req-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.35rem 1.4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .req-card h3 {
+    font-size: var(--step-1);
+    font-weight: 620;
+  }
+
+  .req-card .prof {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-3);
+  }
+
+  ul.checks {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  ul.checks li {
+    display: grid;
+    grid-template-columns: 1.35rem 1fr;
+    gap: 0.5rem;
+    font-size: var(--step--1);
+    line-height: 1.5;
+    color: var(--ink-2);
+  }
+
+  .box {
+    width: 0.95rem;
+    height: 0.95rem;
+    margin-top: 0.22rem;
+    border: 1px solid var(--line-2);
+    border-radius: 2px;
+    background: var(--surface-2);
+  }
+
+  .box.done {
+    background: var(--accent);
+    border-color: var(--accent);
+    position: relative;
+  }
+
+  .box.done::after {
+    content: "";
+    position: absolute;
+    left: 0.28rem;
+    top: 0.08rem;
+    width: 0.24rem;
+    height: 0.48rem;
+    border: solid var(--surface);
+    border-width: 0 1.8px 1.8px 0;
+    transform: rotate(42deg);
+  }
+
+  .req-card .note {
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+  }
+
+  /* ---------- decisões ---------- */
+
+  .decisions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .dec {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .dec-head {
+    padding: 1.25rem 1.4rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .dec-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .dec-id {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+  }
+
+  .dep {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+  }
+
+  .dep.blocker {
+    color: var(--crit);
+    border-color: var(--crit);
+  }
+
+  .dec-head h3 {
+    font-size: var(--step-1);
+    font-weight: 620;
+  }
+
+  .dec-head .why {
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    max-width: 68ch;
+  }
+
+  .opts {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .opt {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0 1rem;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--line);
+    align-items: start;
+  }
+
+  .opt:last-child { border-bottom: none; }
+
+  .opt-tag {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    letter-spacing: 0.05em;
+    padding-top: 0.1rem;
+  }
+
+  .opt-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  .opt-title {
+    font-weight: 600;
+    font-size: var(--step-0);
+  }
+
+  .opt-note {
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    line-height: 1.55;
+  }
+
+  .opt.pick {
+    background: var(--accent-soft);
+  }
+
+  .opt.pick .opt-tag { color: var(--accent); font-weight: 700; }
+
+  .pick-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brass);
+    background: var(--brass-soft);
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+    width: fit-content;
+  }
+
+  .cost {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    letter-spacing: 0.03em;
+  }
+
+  .cost b { color: var(--ink-2); font-weight: 600; }
+
+  /* fluxo de arquitetura */
+  .flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    margin-top: 0.15rem;
+  }
+
+  .flow span.n {
+    border: 1px solid var(--line-2);
+    background: var(--surface-2);
+    border-radius: 2px;
+    padding: 0.15rem 0.45rem;
+    white-space: nowrap;
+  }
+
+  .flow span.n.hi {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: transparent;
+  }
+
+  .flow span.n.out {
+    color: var(--ink-3);
+    text-decoration: line-through;
+  }
+
+  .flow span.a { color: var(--ink-3); }
+
+  /* ---------- tabela de impacto ---------- */
+
+  .table-scroll {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 34rem;
+    font-size: var(--step--1);
+  }
+
+  th, td {
+    text-align: left;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+
+  th {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    background: var(--surface-2);
+    white-space: nowrap;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+
+  td.file { font-family: var(--mono); white-space: nowrap; color: var(--ink); }
+
+  .sev {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .sev.rewrite { color: var(--crit); }
+  .sev.edit    { color: var(--warn); }
+  .sev.keep    { color: var(--good); }
+
+  /* ---------- próximos passos ---------- */
+
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .steps li {
+    counter-increment: step;
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 0.85rem;
+    align-items: baseline;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 0.9rem 1.1rem;
+  }
+
+  .steps li::before {
+    content: counter(step, decimal-leading-zero);
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .steps .st-title { font-weight: 600; }
+  .steps .st-note { font-size: var(--step--1); color: var(--ink-2); display: block; margin-top: 0.2rem; }
+
+  .callout {
+    border-left: 2px solid var(--brass);
+    background: var(--brass-soft);
+    padding: 0.9rem 1.15rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    max-width: 68ch;
+  }
+
+  .callout b { color: var(--ink); }
+
+  footer {
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    max-width: 64ch;
+  }
+
+  :where(a, button, summary):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  @media (max-width: 34rem) {
+    .opt { grid-template-columns: 1fr; gap: 0.5rem; }
+    .masthead { padding-top: 2.25rem; }
+  }
+  /* Estados acrescentados em 28/08/2026, quando as tres primeiras decisoes foram fechadas */
+  .dep.fechada {
+    color: var(--good);
+    border-color: var(--good);
+  }
+
+  .tile .num.done { color: var(--good); }
+
+  .opt.decidida {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 0 var(--good);
+  }
+
+  .opt.decidida .opt-tag { color: var(--good); font-weight: 700; }
+
+  .decidida-flag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--good);
+    border: 1px solid var(--good);
+    border-radius: 999px;
+    padding: 0.12rem 0.6rem;
+    width: fit-content;
+  }
+
+  .opt.descartada .opt-title,
+  .opt.descartada .opt-note,
+  .opt.descartada .flow,
+  .opt.descartada .cost { opacity: 0.5; }
+
+  .descartada-flag {
+    display: inline-flex;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    width: fit-content;
+  }
+
+  .banner {
+    border: 1px solid var(--good);
+    border-left-width: 3px;
+    border-radius: var(--radius);
+    background: var(--surface);
+    padding: 1.1rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: var(--gap);
+  }
+
+  .banner .banner-tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--good);
+  }
+
+  .banner p {
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    line-height: 1.6;
+    max-width: 78ch;
+  }
+
+  .banner b { color: var(--ink); }
+
+
+  /* ---------- figuras e diagramas ---------- */
+
+  figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 1.5rem 1.4rem 1.2rem;
+  }
+
+  figure svg {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    color: var(--ink-2);
+  }
+
+  .fig-scroll { overflow-x: auto; }
+  .fig-scroll svg { min-width: 30rem; }
+
+  figcaption {
+    font-size: var(--step--1);
+    color: var(--ink-3);
+    line-height: 1.55;
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+    max-width: 74ch;
+  }
+
+  figcaption b { color: var(--ink-2); }
+
+  /* ---------- estrutura de tabela do banco ---------- */
+
+  .schema-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(21rem, 1fr));
+    gap: 1.25rem;
+  }
+
+  .schema {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .schema-head {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    padding: 0.85rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .schema-head .tbl {
+    font-family: var(--mono);
+    font-size: var(--step-0);
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .schema-head .desc {
+    font-size: var(--step--1);
+    color: var(--ink-3);
+  }
+
+  .cols {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .col {
+    display: grid;
+    grid-template-columns: minmax(7.5rem, auto) 1fr;
+    gap: 0.2rem 0.9rem;
+    padding: 0.6rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    align-items: baseline;
+  }
+
+  .col:last-child { border-bottom: none; }
+
+  .col .cn {
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .col .ct {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--ink-3);
+    letter-spacing: 0.02em;
+  }
+
+  .col .cd {
+    grid-column: 1 / -1;
+    font-size: var(--step--1);
+    color: var(--ink-2);
+    line-height: 1.5;
+  }
+
+  .keys {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    grid-column: 1 / -1;
+    margin-top: 0.1rem;
+  }
+
+  .key {
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 2px;
+    padding: 0.05rem 0.4rem;
+    border: 1px solid currentColor;
+  }
+
+  .key.pk { color: var(--brass); }
+  .key.fk { color: var(--accent); }
+  .key.uq { color: var(--good); }
+  .key.nn { color: var(--ink-3); }
+  .key.ck { color: var(--warn); }
+  .key.df { color: var(--ink-3); }
+
+  /* ---------- bloco de evidência (saída real de comando) ---------- */
+
+  .evidencia {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .ev-head {
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .ev-head .cmd {
+    color: var(--accent);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .ev-body {
+    overflow-x: auto;
+    padding: 1rem 1.1rem;
+  }
+
+  .ev-body pre {
+    margin: 0;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    line-height: 1.65;
+    color: var(--ink-2);
+    white-space: pre;
+  }
+
+  .ev-body pre b { color: var(--ink); font-weight: 600; }
+  .ev-body pre .ok { color: var(--good); }
+  .ev-body pre .no { color: var(--crit); }
+
+  /* ---------- matriz de rastreabilidade ---------- */
+
+  .status {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-radius: 999px;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid currentColor;
+  }
+
+  .status.feito    { color: var(--good); }
+  .status.parcial  { color: var(--warn); }
+  .status.aberto   { color: var(--crit); }
+
+  td .materia {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-top: 0.2rem;
+  }
+
+  /* ---------- linha de contas de teste ---------- */
+
+  .perfil-tag {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.05rem 0.4rem;
+    border-radius: 2px;
+    border: 1px solid currentColor;
+    white-space: nowrap;
+  }
+
+  .perfil-tag.adm { color: var(--brass); }
+  .perfil-tag.ges { color: var(--accent); }
+  .perfil-tag.ope { color: var(--ink-3); }
+
+  .inativa { color: var(--crit); font-size: var(--step--1); }
+
+  td.hash {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--ink-3);
+    word-break: break-all;
+    min-width: 12rem;
+  }
+
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Custo Certo · FATEC Indaiatuba · 2º semestre de 2026</p>
+    <h1>Decisões da Migração</h1>
+    <p class="lead">Eram 8 decisões. O trabalho de <b>28 de agosto</b> fechou quatro delas na prática e entregou o sistema desktop funcionando sobre MySQL — autenticação, estoque, balança e indicadores. Este documento reúne a arquitetura, o modelo de dados, os mecanismos e o que ainda falta.</p>
+
+    <div class="tiles">
+      <div class="tile">
+        <span class="num open">4</span>
+        <span class="cap">decisões ainda em aberto</span>
+      </div>
+      <div class="tile">
+        <span class="num done">4</span>
+        <span class="cap">resolvidas pelo código em 28/08</span>
+      </div>
+      <div class="tile">
+        <span class="num done">4</span>
+        <span class="cap">tabelas relacionais em MySQL</span>
+      </div>
+      <div class="tile">
+        <span class="num done">4</span>
+        <span class="cap">telas do sistema em JavaFX</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="banner">
+    <span class="banner-tag">Atualizado em 28/08/2026</span>
+    <p><b>Quatro decisões foram fechadas fora da reunião.</b> O Guilherme precisava destravar o código e escolheu <b>D1-A</b> (o app Java fala JDBC direto no MySQL), <b>D7</b> com JavaFX em vez de Swing, <b>D6-A</b> na conversão de tipos e <b>D8-A</b> recomeçando do seed. O build ficou em Maven com wrapper, na pasta <code>desktop/</code>.</p>
+    <p><b>O que existe hoje:</b> MySQL 8.4 instalado e carregado com quatro tabelas, e uma aplicação JavaFX em camadas com login por perfil, gestão de estoque, balança em tempo real e painel de indicadores — tudo compilando e testado. O firmware do ESP32 também foi otimizado, mas <b>ainda não foi regravado</b>.</p>
+    <p><b>O que isso pede do grupo:</b> validar as quatro escolhas e fechar as restantes. <b>D2</b> e <b>D5</b> são as urgentes: sem D2 não há como demonstrar o acesso via rede local, e o DER de D5 precisa cobrir agora as quatro tabelas.</p>
+  </div>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Ponto de partida</p>
+      <h2>Onde o projeto está hoje</h2>
+    </div>
+    <div class="prose" style="display:flex;flex-direction:column;gap:0.9rem;color:var(--ink-2)">
+      <p>O repositório está na <code>main</code>, sincronizado com o remoto. A pasta <code>desktop/</code> com a autenticação em JavaFX já existe na máquina do Guilherme, mas <b style="color:var(--ink)">ainda não foi commitada nem enviada</b> — o grupo vai vê-la primeiro na reunião.</p>
+      <p>O que já está no ar: backend Node/TypeScript com Express 5 em camadas (<span class="mono">rotas → controllers → services → repositories</span>), validação com Zod, Swagger em <code>/api-docs</code>, banco SQLite/Turso via <code>@libsql/client</code>, frontend HTML/CSS/JS em <code>public/</code>, firmware ESP32 + HX711 em PlatformIO e deploy no Render.</p>
+      <p><b style="color:var(--ink)">A boa notícia:</b> a exigência de "sistema em camadas" da POO já está atendida pela arquitetura atual. O que muda é a linguagem da camada de apresentação e o banco embaixo.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">O contrato</p>
+      <h2>O que as duas matérias exigem</h2>
+    </div>
+    <div class="req-grid">
+
+      <div class="req-card">
+        <div>
+          <h3>Banco de Dados</h3>
+          <span class="prof">Prof. Marlon</span>
+        </div>
+        <ul class="checks">
+          <li><span class="box"></span><span>Modelagem via diagrama entidade-relacionamento (DER) a partir do cenário</span></li>
+          <li><span class="box"></span><span>Banco relacional criado em <b>MySQL</b></span></li>
+          <li><span class="box done"></span><span>Restrições de chave primária, estrangeira e demais pertinentes <span style="color:var(--good)">— nas tabelas de acesso</span></span></li>
+          <li><span class="box"></span><span>Mínimo de <b>5 linhas via INSERT em cada tabela</b></span></li>
+        </ul>
+        <p class="note">Hoje o banco é SQLite/Turso. As tabelas <code>receitas</code> e <code>receita_ingredientes</code> existem mas estão vazias e sem CRUD — elas também precisam dos 5 INSERTs.</p>
+      </div>
+
+      <div class="req-card">
+        <div>
+          <h3>Programação Orientada a Objetos</h3>
+          <span class="prof">Prof. Sérgio Furgeri</span>
+        </div>
+        <ul class="checks">
+          <li><span class="box done"></span><span>Sistema desenvolvido <b>em camadas</b> <span style="color:var(--good)">— já atendido pelo backend atual</span></span></li>
+          <li><span class="box done"></span><span>Interface gráfica <b>em Java</b> <span style="color:var(--good)">— telas de login em JavaFX</span></span></li>
+          <li><span class="box"></span><span>Manipulação de banco de dados e <b>acesso via rede local</b></span></li>
+          <li><span class="box"></span><span>Aderência aos requisitos do usuário e aos modelos elaborados</span></li>
+          <li><span class="box"></span><span>Arquitetura do sistema documentada</span></li>
+          <li><span class="box done"></span><span>Documentação gerada por <b>Javadoc</b> <span style="color:var(--good)">— gerando em desktop/</span></span></li>
+        </ul>
+        <p class="note">O frontend hoje é HTML/CSS/JS vanilla com Chart.js. A GUI Java não substitui necessariamente ele — ver decisão D1.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Rastreabilidade</p>
+      <h2>Requisito por requisito, onde ele está atendido</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Cada linha liga uma exigência das duas matérias ao lugar exato do projeto que a cumpre. As linhas em amarelo e vermelho são as que ainda dependem de decisão do grupo — vale entrar na reunião sabendo quais são.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Exigência</th><th>Situação</th><th>Como está atendida</th><th>Onde ver</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Interface gráfica <b>em Java</b><span class="materia">POO · Furgeri</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>Tela de login e tela principal em JavaFX, estilizadas por CSS com a mesma paleta do painel web, para que as duas versões sejam reconhecidas como o mesmo sistema.</td>
+            <td class="file">view/TelaLogin.java<br>view/TelaPrincipal.java<br>css/estilo.css</td>
+          </tr>
+          <tr>
+            <td>Sistema desenvolvido <b>em camadas</b><span class="materia">POO · Furgeri</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>Quatro camadas com dependência em sentido único: <span class="mono">view → service → dao → model</span>. Não existe uma linha de SQL fora do pacote <code>dao</code>, nem uma regra de autenticação fora do <code>service</code>.</td>
+            <td class="file">desktop/src/main/java/<br>br/com/custocerto/</td>
+          </tr>
+          <tr>
+            <td><b>Manipulação de banco de dados</b><span class="materia">POO · Furgeri</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>O app Java abre a conexão e executa o SQL ele mesmo, via JDBC — não consome API de terceiros. É a consequência direta de ter escolhido D1-A.</td>
+            <td class="file">dao/ConexaoMySQL.java<br>dao/UsuarioDAO.java<br>dao/LogAcessoDAO.java</td>
+          </tr>
+          <tr>
+            <td><b>Acesso via rede local</b><span class="materia">POO · Furgeri</span></td>
+            <td><span class="status parcial">falta combinar</span></td>
+            <td>Tecnicamente pronto: o endereço do servidor sai de arquivo de configuração, a conexão é TCP na porta 3306 e a porta já está liberada no firewall para a sub-rede local. Falta o grupo definir <b>qual máquina</b> serve o banco na apresentação.</td>
+            <td class="file">util/ConfiguracaoBanco.java<br>config.properties<br><b>depende de D2</b></td>
+          </tr>
+          <tr>
+            <td>Aderência aos <b>requisitos do usuário</b><span class="materia">POO · Furgeri</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>O item 4 da definição de escopo prevê "autenticação e perfis de acesso, distinguindo as permissões do gestor, do operador e do administrador". Os três perfis existem no enum e no <code>ENUM</code> do banco, com as permissões de cada um.</td>
+            <td class="file">model/Perfil.java<br>Escopo do Sistema, item 4</td>
+          </tr>
+          <tr>
+            <td>Documentação por <b>Javadoc</b><span class="materia">POO · Furgeri</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>Todas as classes, métodos públicos, parâmetros e retornos documentados. Um comando gera o HTML completo.</td>
+            <td class="file">mvnw javadoc:javadoc<br>target/reports/apidocs/</td>
+          </tr>
+          <tr>
+            <td><b>Arquitetura do sistema</b> documentada<span class="materia">POO · Furgeri</span></td>
+            <td><span class="status parcial">parcial</span></td>
+            <td>A arquitetura da parte desktop está descrita aqui e no README da pasta. Falta o documento consolidado que também cubra o backend Node, o firmware e a integração entre os três.</td>
+            <td class="file">desktop/README.md<br>este documento</td>
+          </tr>
+          <tr>
+            <td>Banco relacional em <b>MySQL</b><span class="materia">BD · Marlon</span></td>
+            <td><span class="status parcial">parcial</span></td>
+            <td>As tabelas de acesso já estão em MySQL 8.4, em InnoDB e utf8mb4. As tabelas de insumos, movimentações e receitas continuam em SQLite até a migração.</td>
+            <td class="file">sql/01_schema_usuarios.sql<br><b>depende de D6 e D8</b></td>
+          </tr>
+          <tr>
+            <td>Restrições de <b>PK, FK</b> e demais pertinentes<span class="materia">BD · Marlon</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>Seis restrições nomeadas conferidas no banco em execução: 2 PRIMARY KEY, 1 FOREIGN KEY com <code>ON DELETE SET NULL</code>, 1 UNIQUE e 2 CHECK — além de ENUM, NOT NULL e DEFAULT nas colunas.</td>
+            <td class="file">information_schema<br>.TABLE_CONSTRAINTS</td>
+          </tr>
+          <tr>
+            <td>Mínimo de <b>5 INSERTs por tabela</b><span class="materia">BD · Marlon</span></td>
+            <td><span class="status feito">atendido</span></td>
+            <td>5 contas em <code>usuarios</code> e 6 registros em <code>log_acesso</code>, cada linha escolhida para demonstrar um comportamento diferente do sistema. O script é reexecutável sem duplicar — foi testado rodando duas vezes.</td>
+            <td class="file">sql/01_schema_usuarios.sql</td>
+          </tr>
+          <tr>
+            <td>Modelagem via <b>DER</b> a partir do cenário<span class="materia">BD · Marlon</span></td>
+            <td><span class="status aberto">pendente</span></td>
+            <td>O modelo das duas tabelas de acesso está desenhado neste documento, mas o DER da entrega precisa cobrir o sistema inteiro — insumos, movimentações, receitas e lotes de validade.</td>
+            <td class="file"><b>depende de D5</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>Leitura rápida do quadro:</b> das 11 exigências, <b>7 estão atendidas</b>, 3 dependem de decisões que o grupo ainda precisa fechar (D2, D5, D6/D8) e 1 é trabalho de documentação que ninguém pegou ainda. Nenhuma delas está bloqueada por dificuldade técnica — todas as pendências são de combinação entre as pessoas.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Arquitetura</p>
+      <h2>Como o sistema está organizado</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">O Prof. Furgeri pede duas coisas que se resolvem no mesmo desenho: <b>sistema em camadas</b> e <b>manipulação de banco com acesso via rede local</b>. O diagrama mostra as duas — a pilha de camadas à esquerda e a conexão que sai da máquina pela porta 3306.</p>
+    </div>
+
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 820 430" role="img" aria-label="A aplicação JavaFX é dividida em camadas view, service e dao; a camada dao abre conexão JDBC na porta 3306 com o MySQL da rede local. Em paralelo, o ESP32 envia o peso por HTTP para o backend Node, que ainda grava em SQLite e vai migrar para o mesmo MySQL.">
+        <defs>
+          <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"/>
+          </marker>
+          <marker id="setaAcc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+          </marker>
+          <marker id="setaFraca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--ink-3)"/>
+          </marker>
+        </defs>
+
+        <text x="40" y="26" font-size="12" font-weight="700" fill="var(--accent)" letter-spacing="0.08em">APLICAÇÃO JAVA (DESKTOP)</text>
+        <text x="580" y="26" font-size="12" font-weight="700" fill="var(--ink-3)" letter-spacing="0.08em">BALANÇA (JÁ EXISTIA)</text>
+
+        <rect x="40" y="44" width="250" height="52" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="52" y="66" font-size="13" font-weight="600" fill="var(--ink)">view</text>
+        <text x="52" y="84" font-size="11" fill="var(--ink-3)">TelaLogin · TelaPrincipal</text>
+
+        <line x1="165" y1="96" x2="165" y2="112" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#setaAcc)"/>
+        <text x="175" y="110" font-size="10.5" fill="var(--ink-3)">e-mail e senha</text>
+
+        <rect x="40" y="114" width="250" height="52" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="52" y="136" font-size="13" font-weight="600" fill="var(--ink)">service</text>
+        <text x="52" y="154" font-size="11" fill="var(--ink-3)">AutenticacaoService</text>
+
+        <line x1="165" y1="166" x2="165" y2="182" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#setaAcc)"/>
+        <text x="175" y="180" font-size="10.5" fill="var(--ink-3)">busca por e-mail</text>
+
+        <rect x="40" y="184" width="250" height="66" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="52" y="206" font-size="13" font-weight="600" fill="var(--ink)">dao</text>
+        <text x="52" y="223" font-size="11" fill="var(--ink-3)">UsuarioDAO · LogAcessoDAO</text>
+        <text x="52" y="239" font-size="11" fill="var(--ink-3)">ConexaoMySQL</text>
+
+        <rect x="330" y="114" width="200" height="52" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="4 3"/>
+        <text x="342" y="136" font-size="13" font-weight="600" fill="var(--ink-2)">model</text>
+        <text x="342" y="154" font-size="11" fill="var(--ink-3)">Usuario · Perfil</text>
+        <line x1="290" y1="140" x2="326" y2="140" stroke="var(--ink-3)" stroke-width="1" stroke-dasharray="3 3"/>
+        <text x="342" y="184" font-size="10.5" fill="var(--ink-3)">trafega entre as camadas</text>
+
+        <polyline points="165,250 165,300 300,300 300,348" fill="none" stroke="var(--accent)" stroke-width="2" marker-end="url(#setaAcc)"/>
+        <text x="178" y="294" font-size="11" font-weight="600" fill="var(--accent)">JDBC · TCP 3306 · rede local</text>
+
+        <rect x="580" y="44" width="200" height="52" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <text x="592" y="66" font-size="13" font-weight="600" fill="var(--ink-2)">ESP32 + HX711</text>
+        <text x="592" y="84" font-size="11" fill="var(--ink-3)">firmware PlatformIO</text>
+
+        <line x1="680" y1="96" x2="680" y2="182" stroke="var(--ink-3)" stroke-width="1.2" marker-end="url(#setaFraca)"/>
+        <text x="692" y="144" font-size="10.5" fill="var(--ink-3)">POST /balanca/peso</text>
+
+        <rect x="580" y="184" width="200" height="66" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <text x="592" y="206" font-size="13" font-weight="600" fill="var(--ink-2)">Node / Express</text>
+        <text x="592" y="223" font-size="11" fill="var(--ink-3)">rotas · services</text>
+        <text x="592" y="239" font-size="11" fill="var(--ink-3)">repositories</text>
+
+        <polyline points="680,250 680,320 430,320 430,348" fill="none" stroke="var(--ink-3)" stroke-width="1.2" stroke-dasharray="5 4" marker-end="url(#setaFraca)"/>
+        <text x="452" y="314" font-size="10.5" fill="var(--ink-3)">hoje SQLite/Turso — migra em D6 e D8</text>
+
+        <rect x="250" y="350" width="230" height="58" rx="3" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <text x="365" y="374" font-size="14" font-weight="700" text-anchor="middle" fill="var(--accent)">MySQL 8.4</text>
+        <text x="365" y="393" font-size="11" text-anchor="middle" fill="var(--ink-3)">banco custo_certo</text>
+      </svg>
+      </div>
+      <figcaption><b>A linha cheia é o que já funciona hoje.</b> A tela nunca fala com o banco: ela entrega e-mail e senha ao <code>service</code>, que pede o usuário ao <code>dao</code>, e só o <code>dao</code> escreve SQL. É essa separação que caracteriza o sistema em camadas. A linha tracejada da direita é o caminho da balança, que continua no Node — ele ainda grava em SQLite e só migra para o MySQL quando as decisões D6 e D8 forem fechadas.</figcaption>
+    </figure>
+
+    <div class="callout">
+      <b>Por que a separação importa na prática:</b> trocar o banco de MySQL para outro exigiria reescrever apenas o pacote <code>dao</code> — quatro classes. A tela, as regras de autenticação e o modelo de dados não têm uma linha sequer que saiba qual banco está embaixo.
+    </div>
+  </section>
+
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">A pauta</p>
+      <h2>As 8 decisões</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Três já estão fechadas e aparecem marcadas em verde. Nas cinco restantes, o caminho destacado continua sendo apenas uma sugestão para a discussão — quem fecha é o grupo.</p>
+    </div>
+
+    <div class="decisions">
+
+      <!-- D1 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D1</span>
+            <span class="dep fechada">fechada em 28/08 — destravou D2, D3, D4 e D7</span>
+          </div>
+          <h3>Qual passa a ser o papel do backend Node/Express?</h3>
+          <p class="why">É a decisão raiz. Ela define se o app Java fala com o banco direto ou através da API que já existe — e isso muda o que cada pessoa vai programar no semestre inteiro.</p>
+        </div>
+        <div class="opts">
+
+          <div class="opt decidida">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="decidida-flag">Escolhida em 28/08</span>
+              <span class="opt-title">Java fala JDBC direto no MySQL; Node continua vivo para a balança e o painel web</span>
+              <div class="flow">
+                <span class="n hi">GUI Java</span><span class="a">→</span><span class="n hi">JDBC</span><span class="a">→</span><span class="n hi">MySQL</span><span class="a">&nbsp;&nbsp;·&nbsp;&nbsp;</span><span class="n">ESP32</span><span class="a">→</span><span class="n">Node/Express</span><span class="a">→</span><span class="n">MySQL</span>
+              </div>
+              <span class="opt-note">Entrega o requisito da POO ao pé da letra: o app Java manipula o banco e acessa pela rede local. O ESP32 e o painel web continuam funcionando sem reescrita. O custo é ter regra de negócio em dois lugares — o que já é verdade hoje entre backend e frontend.</span>
+              <div class="cost"><span><b>Esforço:</b> médio</span><span><b>Risco:</b> baixo</span><span><b>Reaproveita:</b> tudo que existe</span></div>
+              <span class="opt-note"><b style="color:var(--ink)">Já implementado:</b> as classes <code>ConexaoMySQL</code>, <code>UsuarioDAO</code> e <code>LogAcessoDAO</code> em <code>desktop/</code> abrem a conexão JDBC e executam o SQL. O endereço do servidor sai de um arquivo de configuração, então apontar para outra máquina da LAN não exige recompilar.</span>
+            </div>
+          </div>
+
+          <div class="opt descartada">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="descartada-flag">Não escolhida</span>
+              <span class="opt-title">Java vira cliente HTTP da API Express; só o Node toca o banco</span>
+              <div class="flow">
+                <span class="n hi">GUI Java</span><span class="a">→</span><span class="n hi">HTTP</span><span class="a">→</span><span class="n">Node/Express</span><span class="a">→</span><span class="n">MySQL</span>
+              </div>
+              <span class="opt-note">Zero duplicação de regra e reaproveita Zod, Swagger e os services. O problema: o requisito diz "manipulação de banco de dados" no sistema Java — aqui o Java nunca vê o banco. Vale confirmar com o Furgeri se consumir uma API satisfaz o critério antes de escolher isso.</span>
+              <div class="cost"><span><b>Esforço:</b> baixo</span><span><b>Risco:</b> alto — depende de aval do professor</span></div>
+            </div>
+          </div>
+
+          <div class="opt descartada">
+            <span class="opt-tag">C</span>
+            <div class="opt-body">
+              <span class="descartada-flag">Não escolhida</span>
+              <span class="opt-title">Reescrever tudo em Java; o Node sai do projeto</span>
+              <div class="flow">
+                <span class="n hi">GUI Java</span><span class="a">→</span><span class="n hi">Serviço Java</span><span class="a">→</span><span class="n hi">MySQL</span><span class="a">&nbsp;&nbsp;·&nbsp;&nbsp;</span><span class="n out">Node/Express</span>
+              </div>
+              <span class="opt-note">O mais coerente como arquitetura final, e o mais caro. Obriga a reescrever o receptor HTTP do ESP32, o SSE de peso em tempo real, o Swagger e os testes Cypress — trabalho que já está pronto e testado.</span>
+              <div class="cost"><span><b>Esforço:</b> alto</span><span><b>Risco:</b> alto — joga fora trabalho funcionando</span></div>
+            </div>
+          </div>
+
+        </div>
+      </article>
+
+      <!-- D2 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D2</span>
+            <span class="dep">depende de D1</span>
+          </div>
+          <h3>Onde o MySQL vai rodar?</h3>
+          <p class="why">O requisito da POO fala em <b>acesso via rede local</b>. Isso precisa ser verdade pelo menos na hora da apresentação, então a escolha aqui não é só de conveniência.</p>
+        </div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="pick-flag">Caminho sugerido</span>
+              <span class="opt-title">MySQL local em cada máquina para desenvolver + um PC do grupo como servidor na LAN para demonstrar</span>
+              <span class="opt-note">Cada um trabalha isolado sem depender da rede da FATEC, e a demo de rede local acontece com o notebook de alguém do grupo servindo os outros. Exige combinar usuário, senha e porta iguais para todo mundo.</span>
+              <div class="cost"><span><b>Requer:</b> script de setup versionado no repo</span></div>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="opt-title">Só um servidor central na rede da FATEC</span>
+              <span class="opt-note">Uma fonte de verdade, sem divergência de dados entre as máquinas. Mas ninguém programa em casa, e a rede do laboratório pode bloquear a porta 3306.</span>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">C</span>
+            <div class="opt-body">
+              <span class="opt-title">MySQL em nuvem</span>
+              <span class="opt-note">Resolve o trabalho remoto e o deploy de uma vez, mas não demonstra "acesso via rede local" — precisaria de um servidor local só para a apresentação de qualquer forma.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D3 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D3</span>
+            <span class="dep">depende de D1 e D2</span>
+          </div>
+          <h3>O que acontece com Turso, Render e o SQLite?</h3>
+          <p class="why">O deploy público hoje é Render + Turso, e o <code>render.yaml</code> já está versionado. Um MySQL na rede local não é alcançável pelo Render — os dois mundos não se conectam de graça.</p>
+        </div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="pick-flag">Caminho sugerido</span>
+              <span class="opt-title">Congelar o deploy Render/Turso como está e desenvolver contra MySQL</span>
+              <span class="opt-note">A versão publicada continua no ar como vitrine do semestre passado enquanto o MySQL vira o alvo do desenvolvimento. Decidir no fim do semestre se o Render volta apontando para um MySQL em nuvem.</span>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="opt-title">Manter os dois bancos funcionando em paralelo</span>
+              <span class="opt-note">O <code>src/config/database.ts</code> viraria uma abstração com duas implementações. Elegante e caro — dois dialetos de SQL para manter em sincronia o semestre todo.</span>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">C</span>
+            <div class="opt-body">
+              <span class="opt-title">Cortar Turso e Render agora</span>
+              <span class="opt-note">Menos coisa para manter, e simplifica o <code>.env</code>. Mas perde a URL pública que o firmware de produção já aponta e que serve de demonstração.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D4 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D4</span>
+            <span class="dep">depende de D1</span>
+          </div>
+          <h3>Quem passa a receber o peso do ESP32?</h3>
+          <p class="why">Hoje a balança faz <code>POST /balanca/peso</code> no Node e consulta a tara por polling; o navegador recebe o peso via SSE. Se o Node sair de cena, tudo isso precisa de um servidor HTTP em Java.</p>
+        </div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="pick-flag">Caminho sugerido</span>
+              <span class="opt-title">O Node continua sendo o receptor da balança</span>
+              <span class="opt-note">Consequência direta de escolher D1-A. Nada no firmware muda, e o fluxo em tempo real que já funciona não é tocado.</span>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="opt-title">Servidor HTTP embutido no app Java</span>
+              <span class="opt-note">Só faz sentido se o grupo escolher D1-C. Implica reescrever o endpoint de peso, o de tara e o streaming — e regravar o firmware apontando para a nova porta.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D5 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D5</span>
+            <span class="dep">independente — pode começar já</span>
+          </div>
+          <h3>O DER cobre só o que existe hoje, ou o que o sistema promete?</h3>
+          <p class="why">O schema atual tem 4 tabelas, mas duas delas (<code>receitas</code> e <code>receita_ingredientes</code>) nunca foram usadas. O README promete cálculo de CMV por produto e alertas de validade com lógica FIFO — coisas que o modelo atual não sustenta bem.</p>
+        </div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="pick-flag">Caminho sugerido</span>
+              <span class="opt-title">Modelar as 4 tabelas atuais + lotes de validade, e ativar receitas de verdade</span>
+              <span class="opt-note">A validade hoje é uma coluna solta em <code>ingredientes</code> e outra colada em <code>movimentacoes_estoque</code> por migration — não dá para fazer FIFO direito assim. Uma entidade de lote resolve isso e rende um DER mais rico para a entrega do Marlon.</span>
+              <div class="cost"><span><b>Ganho:</b> DER melhor + destrava o CMV</span><span><b>Custo:</b> mexe no CRUD existente</span></div>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="opt-title">Espelhar exatamente o schema de hoje</span>
+              <span class="opt-note">Mais rápido e sem risco de quebrar o que funciona. O DER fica magro, e as duas tabelas vazias vão precisar de 5 INSERTs inventados só para cumprir o requisito.</span>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">C</span>
+            <div class="opt-body">
+              <span class="opt-title">Remodelar do zero a partir do cenário da cafeteria</span>
+              <span class="opt-note">É literalmente o que o enunciado pede ("modelagem a partir do cenário") e daria o melhor DER. Também é o que mais invalida código pronto — todos os repositories precisariam ser revistos.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D6 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D6</span>
+            <span class="dep fechada">antecipada pelo código em 28/08</span>
+          </div>
+          <h3>Como converter os tipos de SQLite para MySQL?</h3>
+          <p class="why">Não é conversão automática. O SQLite é frouxo com tipos e o MySQL não é — e uma escolha errada aqui vira erro de centavo no CMV, que é justamente o que o sistema existe para calcular.</p>
+        </div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="pick-flag">Caminho sugerido</span>
+              <span class="opt-title">DECIMAL para dinheiro, DATE/DATETIME para datas, ENUM para os domínios fechados</span>
+              <span class="opt-note"><code>preco</code> e <code>preco_unitario</code> viram <code>DECIMAL(10,2)</code> em vez de <code>REAL</code> — ponto flutuante em dinheiro acumula erro. As datas em <code>TEXT</code> viram <code>DATE</code> e <code>DATETIME</code> com <code>DEFAULT CURRENT_TIMESTAMP</code>. Os <code>CHECK (... IN ...)</code> de <code>unidade</code> e <code>tipo</code> viram <code>ENUM</code>. Quantidades ficam <code>DECIMAL(10,3)</code> por causa das gramas.</span>
+              <div class="cost"><span><b>Também decidir:</b> InnoDB + utf8mb4</span><span><b>Também decidir:</b> nomes em <code>snake_case</code> mantidos</span></div>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="opt-title">Conversão mínima: DOUBLE, VARCHAR e CHECK</span>
+              <span class="opt-note">Tradução quase literal do schema atual, mais rápida de escrever. Herda o problema de arredondamento em dinheiro e desperdiça a chance de mostrar domínio de restrições — que é exatamente o que está sendo avaliado.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D7 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D7</span>
+            <span class="dep fechada">fechada em 28/08</span>
+          </div>
+          <h3>Como a interface Java é construída, e onde ela mora?</h3>
+          <p class="why">Precisa de três respostas: biblioteca gráfica, ferramenta de build e local no repositório. A escolha de build afeta o Javadoc, que também é entregável.</p>
+        </div>
+        <div class="opts">
+          <div class="opt decidida">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="decidida-flag">Escolhida em 28/08</span>
+              <span class="opt-title">JavaFX + Maven com wrapper, em uma pasta <code>desktop/</code> no mesmo repositório</span>
+              <span class="opt-note">JavaFX é o sucessor do Swing e aceita estilização por CSS, o que permitiu repetir no desktop a mesma paleta do painel web. O Maven resolve o driver JDBC e o próprio JavaFX, e gera o Javadoc com um comando. Mesmo repositório mantém o fluxo de branches e PRs que o grupo já usa.</span>
+              <div class="cost"><span><b>Rodar:</b> <code>mvnw javafx:run</code></span><span><b>Javadoc:</b> <code>mvnw javadoc:javadoc</code></span></div>
+              <span class="opt-note"><b style="color:var(--ink)">O contra que este documento previa não se confirmou.</b> A versão original listava "configurar o SDK do JavaFX em cinco máquinas" como custo da opção B. Isso vale para quem compila na mão: com Maven, o JavaFX entra como dependência e é baixado sozinho. Some-se a isso o <b>Maven Wrapper</b> versionado no repositório, que baixa o próprio Maven — e cada integrante passa a precisar apenas do JDK 21 ou superior.</span>
+            </div>
+          </div>
+          <div class="opt descartada">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="descartada-flag">Parcialmente aproveitada</span>
+              <span class="opt-title">Swing + Maven, em uma pasta <code>desktop/</code> no mesmo repositório</span>
+              <span class="opt-note">A biblioteca gráfica foi descartada em favor do JavaFX, mas as outras duas respostas desta opção foram mantidas: Maven como build e <code>desktop/</code> dentro do mesmo repositório.</span>
+            </div>
+          </div>
+          <div class="opt descartada">
+            <span class="opt-tag">C</span>
+            <div class="opt-body">
+              <span class="descartada-flag">Não escolhida</span>
+              <span class="opt-title">Repositório separado só para o desktop</span>
+              <span class="opt-note">Separa as linguagens de forma limpa. Em troca, a entrega fica espalhada em dois lugares e o professor precisa olhar dois repos.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- D8 -->
+      <article class="dec">
+        <div class="dec-head">
+          <div class="dec-meta">
+            <span class="dec-id">D8</span>
+            <span class="dep fechada">antecipada pelo código em 28/08</span>
+          </div>
+          <h3>Os dados atuais migram, ou recomeçamos do seed?</h3>
+          <p class="why">Existe um <code>data/local.db</code> com dados e um <code>src/database/seed.ts</code> que popula o banco automaticamente quando <code>AUTO_SEED=true</code>.</p>
+        </div>
+        <div class="opts">
+          <div class="opt pick">
+            <span class="opt-tag">A</span>
+            <div class="opt-body">
+              <span class="pick-flag">Caminho sugerido</span>
+              <span class="opt-title">Recomeçar: reescrever o seed como INSERTs de MySQL</span>
+              <span class="opt-note">Os dados atuais são de demonstração — não há nada real a preservar. Escrever os INSERTs à mão já cumpre o requisito das 5 linhas por tabela do Marlon, então o trabalho conta duas vezes.</span>
+            </div>
+          </div>
+          <div class="opt">
+            <span class="opt-tag">B</span>
+            <div class="opt-body">
+              <span class="opt-title">Exportar o SQLite e importar no MySQL</span>
+              <span class="opt-note">Preserva o histórico de movimentações que já foi acumulado nos testes. Exige tratar as diferenças de tipo na mão, e ainda assim não garante 5 linhas nas tabelas de receita.</span>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Banco de dados</p>
+      <h2>O modelo das tabelas de acesso</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">O Prof. Marlon pede modelagem por DER, criação em MySQL, restrições de chave primária e estrangeira, e no mínimo 5 linhas por tabela. Estas duas tabelas cumprem os quatro itens — e são o primeiro pedaço do sistema a sair do SQLite.</p>
+    </div>
+
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 820 320" role="img" aria-label="Diagrama entidade-relacionamento: a entidade usuarios tem chave primária id e relaciona-se um-para-muitos com log_acesso, cuja chave estrangeira usuario_id aceita nulo.">
+        <defs>
+          <marker id="pe" viewBox="0 0 12 12" refX="1" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M 12 0 L 1 6 L 12 12" fill="none" stroke="var(--accent)" stroke-width="1.4"/>
+          </marker>
+        </defs>
+
+        <rect x="30" y="24" width="300" height="266" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="30" y="24" width="300" height="34" rx="3" fill="var(--accent-soft)" stroke="none"/>
+        <text x="46" y="46" font-size="13" font-weight="700" fill="var(--accent)">usuarios</text>
+        <text x="316" y="46" font-size="10.5" text-anchor="end" fill="var(--ink-3)">5 linhas</text>
+
+        <text x="46" y="80"  font-size="11.5" font-weight="700" fill="var(--ink)">id</text>
+        <text x="316" y="80"  font-size="10" text-anchor="end" fill="var(--brass)">PK · AUTO_INCREMENT</text>
+        <text x="46" y="104" font-size="11.5" fill="var(--ink-2)">nome</text>
+        <text x="316" y="104" font-size="10" text-anchor="end" fill="var(--ink-3)">VARCHAR(120) · CHECK</text>
+        <text x="46" y="128" font-size="11.5" font-weight="700" fill="var(--ink)">email</text>
+        <text x="316" y="128" font-size="10" text-anchor="end" fill="var(--good)">UNIQUE · CHECK</text>
+        <text x="46" y="152" font-size="11.5" fill="var(--ink-2)">senha_hash</text>
+        <text x="316" y="152" font-size="10" text-anchor="end" fill="var(--ink-3)">VARCHAR(255)</text>
+        <text x="46" y="176" font-size="11.5" fill="var(--ink-2)">salt</text>
+        <text x="316" y="176" font-size="10" text-anchor="end" fill="var(--ink-3)">VARCHAR(64)</text>
+        <text x="46" y="200" font-size="11.5" fill="var(--ink-2)">perfil</text>
+        <text x="316" y="200" font-size="10" text-anchor="end" fill="var(--warn)">ENUM (3 valores)</text>
+        <text x="46" y="224" font-size="11.5" fill="var(--ink-2)">ativo</text>
+        <text x="316" y="224" font-size="10" text-anchor="end" fill="var(--ink-3)">BOOLEAN · DEFAULT TRUE</text>
+        <text x="46" y="248" font-size="11.5" fill="var(--ink-2)">criado_em</text>
+        <text x="316" y="248" font-size="10" text-anchor="end" fill="var(--ink-3)">DATETIME · DEFAULT</text>
+        <text x="46" y="272" font-size="11.5" fill="var(--ink-2)">ultimo_acesso</text>
+        <text x="316" y="272" font-size="10" text-anchor="end" fill="var(--ink-3)">DATETIME · NULL</text>
+
+        <line x1="330" y1="128" x2="490" y2="128" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#pe)"/>
+        <text x="342" y="120" font-size="12" font-weight="700" fill="var(--accent)">1</text>
+        <text x="474" y="120" font-size="12" font-weight="700" text-anchor="end" fill="var(--accent)">N</text>
+        <text x="410" y="152" font-size="10.5" text-anchor="middle" fill="var(--ink-3)">registra</text>
+
+        <rect x="490" y="24" width="300" height="194" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="490" y="24" width="300" height="34" rx="3" fill="var(--accent-soft)" stroke="none"/>
+        <text x="506" y="46" font-size="13" font-weight="700" fill="var(--accent)">log_acesso</text>
+        <text x="776" y="46" font-size="10.5" text-anchor="end" fill="var(--ink-3)">6 linhas</text>
+
+        <text x="506" y="80"  font-size="11.5" font-weight="700" fill="var(--ink)">id</text>
+        <text x="776" y="80"  font-size="10" text-anchor="end" fill="var(--brass)">PK · AUTO_INCREMENT</text>
+        <text x="506" y="104" font-size="11.5" font-weight="700" fill="var(--ink)">usuario_id</text>
+        <text x="776" y="104" font-size="10" text-anchor="end" fill="var(--accent)">FK → usuarios.id · NULL</text>
+        <text x="506" y="128" font-size="11.5" fill="var(--ink-2)">email_digitado</text>
+        <text x="776" y="128" font-size="10" text-anchor="end" fill="var(--ink-3)">VARCHAR(120)</text>
+        <text x="506" y="152" font-size="11.5" fill="var(--ink-2)">sucesso</text>
+        <text x="776" y="152" font-size="10" text-anchor="end" fill="var(--ink-3)">BOOLEAN</text>
+        <text x="506" y="176" font-size="11.5" fill="var(--ink-2)">origem</text>
+        <text x="776" y="176" font-size="10" text-anchor="end" fill="var(--ink-3)">VARCHAR(120)</text>
+        <text x="506" y="200" font-size="11.5" fill="var(--ink-2)">data_hora</text>
+        <text x="776" y="200" font-size="10" text-anchor="end" fill="var(--ink-3)">DATETIME · DEFAULT</text>
+
+        <text x="506" y="250" font-size="10.5" fill="var(--ink-3)">ON DELETE SET NULL</text>
+        <text x="506" y="268" font-size="10.5" fill="var(--ink-3)">ON UPDATE CASCADE</text>
+      </svg>
+      </div>
+      <figcaption>Um usuário produz muitas tentativas de acesso, e é por isso que a relação é <b>1:N</b>. O detalhe que costuma render pergunta: <code>usuario_id</code> <b>aceita nulo de propósito</b> — quando alguém digita um e-mail que não existe, não há usuário a referenciar, mas a tentativa precisa ficar registrada. O <code>ON DELETE SET NULL</code> segue a mesma lógica: excluir uma conta não apaga o histórico dela, apenas desliga o vínculo.</figcaption>
+    </figure>
+
+    <div class="schema-grid">
+
+      <div class="schema">
+        <div class="schema-head">
+          <span class="tbl">usuarios</span>
+          <span class="desc">Contas de acesso, uma por pessoa que usa o sistema.</span>
+        </div>
+        <div class="cols">
+          <div class="col">
+            <span class="cn">id</span><span class="ct">INT</span>
+            <span class="keys"><span class="key pk">PK</span><span class="key nn">NOT NULL</span></span>
+            <span class="cd">Chave primária com <code>AUTO_INCREMENT</code>. É o que <code>log_acesso</code> referencia.</span>
+          </div>
+          <div class="col">
+            <span class="cn">nome</span><span class="ct">VARCHAR(120)</span>
+            <span class="keys"><span class="key nn">NOT NULL</span><span class="key ck">CHECK</span></span>
+            <span class="cd">Nome completo. O <code>CHECK</code> exige ao menos 3 caracteres depois de remover espaços, o que barra nome vazio ou só com espaço.</span>
+          </div>
+          <div class="col">
+            <span class="cn">email</span><span class="ct">VARCHAR(120)</span>
+            <span class="keys"><span class="key uq">UNIQUE</span><span class="key nn">NOT NULL</span><span class="key ck">CHECK</span></span>
+            <span class="cd">É o login. O <code>UNIQUE</code> impede duas contas com o mesmo e-mail; o <code>CHECK</code> exige o formato mínimo <code>algo@algo.algo</code>.</span>
+          </div>
+          <div class="col">
+            <span class="cn">senha_hash</span><span class="ct">VARCHAR(255)</span>
+            <span class="keys"><span class="key nn">NOT NULL</span></span>
+            <span class="cd">Resultado do PBKDF2 em Base64. Nunca a senha legível.</span>
+          </div>
+          <div class="col">
+            <span class="cn">salt</span><span class="ct">VARCHAR(64)</span>
+            <span class="keys"><span class="key nn">NOT NULL</span></span>
+            <span class="cd">Valor aleatório de 16 bytes, diferente para cada conta. É o que faz duas pessoas com a mesma senha terem hashes diferentes.</span>
+          </div>
+          <div class="col">
+            <span class="cn">perfil</span><span class="ct">ENUM</span>
+            <span class="keys"><span class="key nn">NOT NULL</span><span class="key df">DEFAULT 'OPERADOR'</span></span>
+            <span class="cd">Aceita apenas <code>ADMINISTRADOR</code>, <code>GESTOR</code> ou <code>OPERADOR</code>. O banco recusa qualquer outro valor — a regra não depende da aplicação lembrar dela.</span>
+          </div>
+          <div class="col">
+            <span class="cn">ativo</span><span class="ct">BOOLEAN</span>
+            <span class="keys"><span class="key nn">NOT NULL</span><span class="key df">DEFAULT TRUE</span></span>
+            <span class="cd">Conta desligada não entra, mas continua no banco e mantém o histórico. É como se inativa um funcionário que saiu.</span>
+          </div>
+          <div class="col">
+            <span class="cn">criado_em</span><span class="ct">DATETIME</span>
+            <span class="keys"><span class="key nn">NOT NULL</span><span class="key df">DEFAULT CURRENT_TIMESTAMP</span></span>
+            <span class="cd">Preenchido pelo banco, não pela aplicação.</span>
+          </div>
+          <div class="col">
+            <span class="cn">ultimo_acesso</span><span class="ct">DATETIME</span>
+            <span class="keys"><span class="key nn">NULL</span></span>
+            <span class="cd">Atualizado a cada login aceito. Nulo enquanto a pessoa nunca entrou — e a tela sabe dizer "este é o seu primeiro acesso".</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="schema">
+        <div class="schema-head">
+          <span class="tbl">log_acesso</span>
+          <span class="desc">Uma linha por tentativa de login, aceita ou recusada.</span>
+        </div>
+        <div class="cols">
+          <div class="col">
+            <span class="cn">id</span><span class="ct">INT</span>
+            <span class="keys"><span class="key pk">PK</span><span class="key nn">NOT NULL</span></span>
+            <span class="cd">Chave primária com <code>AUTO_INCREMENT</code>.</span>
+          </div>
+          <div class="col">
+            <span class="cn">usuario_id</span><span class="ct">INT</span>
+            <span class="keys"><span class="key fk">FK</span><span class="key nn">NULL</span></span>
+            <span class="cd">Aponta para <code>usuarios.id</code>. Fica nulo quando o e-mail digitado não corresponde a nenhuma conta.</span>
+          </div>
+          <div class="col">
+            <span class="cn">email_digitado</span><span class="ct">VARCHAR(120)</span>
+            <span class="keys"><span class="key nn">NOT NULL</span></span>
+            <span class="cd">O que foi realmente digitado. Guardar isto é o que permite descobrir tentativas contra e-mails inexistentes.</span>
+          </div>
+          <div class="col">
+            <span class="cn">sucesso</span><span class="ct">BOOLEAN</span>
+            <span class="keys"><span class="key nn">NOT NULL</span></span>
+            <span class="cd">Se as credenciais foram aceitas.</span>
+          </div>
+          <div class="col">
+            <span class="cn">origem</span><span class="ct">VARCHAR(120)</span>
+            <span class="keys"><span class="key nn">NULL</span></span>
+            <span class="cd">Nome e IP da máquina de onde partiu a tentativa. Numa rede local com várias máquinas, é o que identifica de qual delas veio.</span>
+          </div>
+          <div class="col">
+            <span class="cn">data_hora</span><span class="ct">DATETIME</span>
+            <span class="keys"><span class="key nn">NOT NULL</span><span class="key df">DEFAULT CURRENT_TIMESTAMP</span></span>
+            <span class="cd">Momento da tentativa, carimbado pelo banco.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="sec-head" style="margin-top:0.5rem">
+      <h3 style="font-size:var(--step-1);font-weight:620">As restrições, conferidas no banco em execução</h3>
+    </div>
+
+    <div class="evidencia">
+      <div class="ev-head"><span>Consulta ao</span><span class="cmd">information_schema.TABLE_CONSTRAINTS</span></div>
+      <div class="ev-body"><pre>+------------+-----------------------+-------------+
+| tabela     | restricao             | tipo        |
++------------+-----------------------+-------------+
+| log_acesso | fk_log_acesso_usuario | <b>FOREIGN KEY</b> |
+| log_acesso | PRIMARY               | <b>PRIMARY KEY</b> |
+| usuarios   | ck_usuarios_email     | <b>CHECK</b>       |
+| usuarios   | ck_usuarios_nome      | <b>CHECK</b>       |
+| usuarios   | PRIMARY               | <b>PRIMARY KEY</b> |
+| usuarios   | uk_usuarios_email     | <b>UNIQUE</b>      |
++------------+-----------------------+-------------+</pre></div>
+    </div>
+
+    <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">São <b>seis restrições nomeadas</b>: duas chaves primárias, uma chave estrangeira, uma unicidade e dois <code>CHECK</code>. Somam-se a elas o <code>ENUM</code> do perfil, os <code>NOT NULL</code> e os <code>DEFAULT</code>, que o MySQL guarda como propriedade das colunas e não como restrição nomeada. Tudo em <b>InnoDB</b>, o único motor do MySQL que faz valer chave estrangeira.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Carga inicial</p>
+      <h2>As linhas que estão no banco</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">O requisito é de <b>no mínimo 5 linhas por tabela</b>. São 5 contas e 6 registros de acesso — e nenhuma delas é enchimento: cada uma existe para demonstrar um comportamento diferente do sistema na hora da apresentação.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>id</th><th>Nome</th><th>E-mail (login)</th><th>Senha</th><th>Perfil</th><th>Serve para demonstrar</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="file">1</td>
+            <td>Administrador do Sistema</td>
+            <td class="file">admin@custocerto.com.br</td>
+            <td class="file">admin123</td>
+            <td><span class="perfil-tag adm">Administrador</span></td>
+            <td>O perfil com acesso total — é o único que libera o módulo de gestão de usuários.</td>
+          </tr>
+          <tr>
+            <td class="file">2</td>
+            <td>Denilson Ribeiro</td>
+            <td class="file">denilson@letscoffee.com.br</td>
+            <td class="file">gestor123</td>
+            <td><span class="perfil-tag ges">Gestor</span></td>
+            <td>O dono da cafeteria que originou a demanda. Vê indicadores e CMV, mas não administra contas.</td>
+          </tr>
+          <tr>
+            <td class="file">3</td>
+            <td>Marina Alves Prado</td>
+            <td class="file">marina@letscoffee.com.br</td>
+            <td class="file">operador123</td>
+            <td><span class="perfil-tag ope">Operador</span></td>
+            <td>A barista. Opera a balança, mas encontra "Usuários" e "Indicadores" bloqueados.</td>
+          </tr>
+          <tr>
+            <td class="file">4</td>
+            <td>Rafael Souza Lima</td>
+            <td class="file">rafael@letscoffee.com.br</td>
+            <td class="file">operador123</td>
+            <td><span class="perfil-tag ope">Operador</span></td>
+            <td>Segunda conta com a <b>mesma senha</b> da Marina — e mesmo assim com hash completamente diferente no banco. É a prova visual de que o salt funciona.</td>
+          </tr>
+          <tr>
+            <td class="file">5</td>
+            <td>Camila Duarte</td>
+            <td class="file">camila@letscoffee.com.br</td>
+            <td class="file">gestor123</td>
+            <td><span class="perfil-tag ges">Gestor</span> <span class="inativa">· inativa</span></td>
+            <td>Conta desligada. A senha está certa e mesmo assim o acesso é recusado — demonstra o controle de conta inativa.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>Truque para a apresentação:</b> entre com a Marina e depois com o Rafael. As duas contas têm a senha <code>operador123</code>. Depois mostre a coluna <code>senha_hash</code> das duas no console SQL — são valores totalmente distintos. Isso explica em dez segundos o que o salt faz, sem precisar de slide.
+    </div>
+
+    <div class="sec-head" style="margin-top:0.5rem">
+      <h3 style="font-size:var(--step-1);font-weight:620">O histórico de acessos, com as tentativas reais dos testes</h3>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">As seis primeiras linhas vieram do script. Da linha 7 em diante são tentativas que aconteceram de verdade durante os testes de 28/08 — inclusive as recusadas.</p>
+    </div>
+
+    <div class="evidencia">
+      <div class="ev-head"><span class="cmd">SELECT * FROM log_acesso ORDER BY id DESC LIMIT 6;</span></div>
+      <div class="ev-body"><pre>+----+------------+-----------------------------+---------+-------------------------+---------------------+
+| id | usuario_id | email_digitado              | sucesso | origem                  | data_hora           |
++----+------------+-----------------------------+---------+-------------------------+---------------------+
+| 11 |       <b>NULL</b> | naoexiste@custocerto.com.br |       <span class="no">0</span> | Gabriel (192.168.15.5)  | 2026-08-28 21:54:28 |
+| 10 |          5 | camila@letscoffee.com.br    |       <span class="no">0</span> | Gabriel (192.168.15.5)  | 2026-08-28 21:54:28 |
+|  9 |          1 | admin@custocerto.com.br     |       <span class="no">0</span> | Gabriel (192.168.15.5)  | 2026-08-28 21:54:28 |
+|  8 |          3 | marina@letscoffee.com.br    |       <span class="ok">1</span> | Gabriel (192.168.15.5)  | 2026-08-28 21:54:28 |
+|  7 |          1 | admin@custocerto.com.br     |       <span class="ok">1</span> | Gabriel (192.168.15.5)  | 2026-08-28 21:54:28 |
+|  6 |          5 | camila@letscoffee.com.br    |       <span class="no">0</span> | PC-ADMIN (192.168.0.10) | 2026-08-26 10:20:44 |
++----+------------+-----------------------------+---------+-------------------------+---------------------+</pre></div>
+    </div>
+
+    <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Repare na linha 11: <code>usuario_id</code> em <b>NULL</b> porque o e-mail digitado não existe em <code>usuarios</code>. É exatamente o caso que justifica a coluna aceitar nulo — se ela fosse <code>NOT NULL</code>, a tentativa mais suspeita de todas seria a única que o sistema não conseguiria registrar.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Mecanismo</p>
+      <h2>O que acontece quando alguém clica em Entrar</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Sete etapas entre o clique e a tela principal. As quatro saídas à direita são os pontos em que o acesso é recusado — e todas passam pelo registro em <code>log_acesso</code> antes de devolver a mensagem.</p>
+    </div>
+
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 820 520" role="img" aria-label="Fluxo do login em sete etapas: coleta das credenciais, validação dos campos, consulta ao banco com PreparedStatement, verificação de conta ativa, conferência do hash PBKDF2, registro do acesso e abertura da tela principal. Quatro pontos de recusa saem pela direita, cada um gravando a tentativa no log.">
+        <defs>
+          <marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+          </marker>
+          <marker id="s2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--crit)"/>
+          </marker>
+        </defs>
+
+        <text x="40" y="20" font-size="11" font-weight="700" fill="var(--accent)" letter-spacing="0.08em">CAMINHO ACEITO</text>
+        <text x="470" y="20" font-size="11" font-weight="700" fill="var(--crit)" letter-spacing="0.08em">PONTOS DE RECUSA</text>
+
+        <rect x="40" y="34" width="330" height="46" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="54" y="54" font-size="11.5" font-weight="700" fill="var(--ink)">1 · TelaLogin</text>
+        <text x="54" y="71" font-size="10.5" fill="var(--ink-3)">coleta e-mail e senha, em thread separada</text>
+        <line x1="205" y1="80" x2="205" y2="94" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s1)"/>
+
+        <rect x="40" y="96" width="330" height="46" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="54" y="116" font-size="11.5" font-weight="700" fill="var(--ink)">2 · AutenticacaoService</text>
+        <text x="54" y="133" font-size="10.5" fill="var(--ink-3)">campos preenchidos? e-mail normalizado</text>
+        <line x1="370" y1="119" x2="464" y2="119" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#s2)"/>
+        <rect x="470" y="96" width="310" height="46" rx="3" fill="none" stroke="var(--crit)" stroke-width="1"/>
+        <text x="484" y="116" font-size="11" fill="var(--ink-2)">campo vazio</text>
+        <text x="484" y="133" font-size="10.5" fill="var(--ink-3)">"Informe o seu e-mail."</text>
+
+        <line x1="205" y1="142" x2="205" y2="156" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s1)"/>
+
+        <rect x="40" y="158" width="330" height="46" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="54" y="178" font-size="11.5" font-weight="700" fill="var(--ink)">3 · UsuarioDAO.buscarPorEmail</text>
+        <text x="54" y="195" font-size="10.5" fill="var(--ink-3)">SELECT com PreparedStatement</text>
+        <line x1="370" y1="181" x2="464" y2="181" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#s2)"/>
+        <rect x="470" y="158" width="310" height="46" rx="3" fill="none" stroke="var(--crit)" stroke-width="1"/>
+        <text x="484" y="178" font-size="11" fill="var(--ink-2)">e-mail não existe</text>
+        <text x="484" y="195" font-size="10.5" fill="var(--ink-3)">log com usuario_id NULL · msg genérica</text>
+
+        <line x1="205" y1="204" x2="205" y2="218" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s1)"/>
+
+        <rect x="40" y="220" width="330" height="46" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="54" y="240" font-size="11.5" font-weight="700" fill="var(--ink)">4 · a conta está ativa?</text>
+        <text x="54" y="257" font-size="10.5" fill="var(--ink-3)">coluna ativo</text>
+        <line x1="370" y1="243" x2="464" y2="243" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#s2)"/>
+        <rect x="470" y="220" width="310" height="46" rx="3" fill="none" stroke="var(--crit)" stroke-width="1"/>
+        <text x="484" y="240" font-size="11" fill="var(--ink-2)">conta inativa</text>
+        <text x="484" y="257" font-size="10.5" fill="var(--ink-3)">log · "Procure o administrador."</text>
+
+        <line x1="205" y1="266" x2="205" y2="280" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s1)"/>
+
+        <rect x="40" y="282" width="330" height="60" rx="3" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <text x="54" y="302" font-size="11.5" font-weight="700" fill="var(--ink)">5 · SenhaUtil.verificar</text>
+        <text x="54" y="319" font-size="10.5" fill="var(--ink-3)">PBKDF2-HMAC-SHA256 · 210.000 iterações</text>
+        <text x="54" y="335" font-size="10.5" fill="var(--ink-3)">comparação em tempo constante</text>
+        <line x1="370" y1="312" x2="464" y2="312" stroke="var(--crit)" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#s2)"/>
+        <rect x="470" y="289" width="310" height="46" rx="3" fill="none" stroke="var(--crit)" stroke-width="1"/>
+        <text x="484" y="309" font-size="11" fill="var(--ink-2)">hash não confere</text>
+        <text x="484" y="326" font-size="10.5" fill="var(--ink-3)">log · a MESMA msg do e-mail inexistente</text>
+
+        <line x1="205" y1="342" x2="205" y2="356" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s1)"/>
+
+        <rect x="40" y="358" width="330" height="46" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="54" y="378" font-size="11.5" font-weight="700" fill="var(--ink)">6 · registra o acesso</text>
+        <text x="54" y="395" font-size="10.5" fill="var(--ink-3)">INSERT no log · UPDATE ultimo_acesso</text>
+
+        <line x1="205" y1="404" x2="205" y2="418" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s1)"/>
+
+        <rect x="40" y="420" width="330" height="60" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="54" y="440" font-size="11.5" font-weight="700" fill="var(--accent)">7 · TelaPrincipal</text>
+        <text x="54" y="457" font-size="10.5" fill="var(--ink-2)">menu montado a partir das permissões</text>
+        <text x="54" y="473" font-size="10.5" fill="var(--ink-2)">declaradas no enum Perfil</text>
+
+        <text x="470" y="440" font-size="10.5" fill="var(--ink-3)">Toda recusa é gravada antes de</text>
+        <text x="470" y="456" font-size="10.5" fill="var(--ink-3)">devolver a mensagem — a auditoria</text>
+        <text x="470" y="472" font-size="10.5" fill="var(--ink-3)">enxerga o que a tela esconde.</text>
+      </svg>
+      </div>
+      <figcaption>Duas decisões de segurança ficam visíveis no desenho. Na etapa <b>3</b>, o <code>PreparedStatement</code> manda os valores separados do texto do SQL, o que impede que o que foi digitado altere o comando — sem isso, um <code>' OR '1'='1</code> no campo de senha derrubaria a autenticação. Na etapa <b>5</b>, a recusa devolve <b>a mesma mensagem</b> que a etapa 3: mensagens diferentes permitiriam descobrir, por tentativa, quais e-mails existem no sistema.</figcaption>
+    </figure>
+
+    <div class="sec-head" style="margin-top:0.5rem">
+      <h3 style="font-size:var(--step-1);font-weight:620">Por que a senha nunca é gravada legível</h3>
+    </div>
+
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 820 250" role="img" aria-label="No cadastro, a senha é combinada a um salt aleatório e passada 210 mil vezes pelo PBKDF2, e apenas salt e hash vão para o banco. No login, o mesmo cálculo é refeito e os dois hashes são comparados; a senha digitada nunca é gravada.">
+        <defs>
+          <marker id="s3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--accent)"/>
+          </marker>
+        </defs>
+
+        <text x="30" y="22" font-size="11" font-weight="700" fill="var(--ink-3)" letter-spacing="0.08em">NO CADASTRO</text>
+
+        <rect x="30" y="34" width="150" height="44" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1"/>
+        <text x="105" y="52" font-size="11" text-anchor="middle" fill="var(--ink-2)">senha</text>
+        <text x="105" y="68" font-size="10.5" text-anchor="middle" fill="var(--ink-3)">"operador123"</text>
+
+        <text x="196" y="61" font-size="15" text-anchor="middle" fill="var(--ink-3)">+</text>
+
+        <rect x="212" y="34" width="150" height="44" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1"/>
+        <text x="287" y="52" font-size="11" text-anchor="middle" fill="var(--ink-2)">salt aleatório</text>
+        <text x="287" y="68" font-size="10.5" text-anchor="middle" fill="var(--ink-3)">16 bytes, único por conta</text>
+
+        <line x1="362" y1="56" x2="404" y2="56" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s3)"/>
+
+        <rect x="410" y="30" width="180" height="52" rx="3" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <text x="500" y="50" font-size="11.5" font-weight="700" text-anchor="middle" fill="var(--accent)">PBKDF2-HMAC-SHA256</text>
+        <text x="500" y="68" font-size="10.5" text-anchor="middle" fill="var(--ink-3)">210.000 iterações</text>
+
+        <line x1="590" y1="56" x2="632" y2="56" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#s3)"/>
+
+        <rect x="638" y="34" width="152" height="44" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="714" y="52" font-size="11" text-anchor="middle" fill="var(--ink-2)">hash</text>
+        <text x="714" y="68" font-size="10" text-anchor="middle" fill="var(--ink-3)">256 bits em Base64</text>
+
+        <line x1="30" y1="104" x2="790" y2="104" stroke="var(--line)" stroke-width="1"/>
+
+        <text x="30" y="128" font-size="11" font-weight="700" fill="var(--ink-3)" letter-spacing="0.08em">O QUE VAI PARA O BANCO</text>
+        <rect x="30" y="140" width="360" height="42" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="1.5"/>
+        <text x="46" y="158" font-size="11" font-weight="600" fill="var(--accent)">salt + hash</text>
+        <text x="46" y="174" font-size="10.5" fill="var(--ink-2)">colunas salt e senha_hash</text>
+
+        <rect x="420" y="140" width="370" height="42" rx="3" fill="none" stroke="var(--crit)" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="436" y="158" font-size="11" font-weight="600" fill="var(--crit)">a senha digitada</text>
+        <text x="436" y="174" font-size="10.5" fill="var(--ink-3)">descartada da memória, nunca gravada</text>
+
+        <text x="30" y="216" font-size="11" font-weight="700" fill="var(--ink-3)" letter-spacing="0.08em">NO LOGIN</text>
+        <text x="30" y="238" font-size="11" fill="var(--ink-2)">refaz o mesmo cálculo com o salt guardado e compara os dois hashes — se batem, a senha estava certa.</text>
+      </svg>
+      </div>
+      <figcaption>O <b>salt</b> impede que duas contas com a mesma senha tenham o mesmo hash, o que inviabiliza consultar tabelas de hashes pré-calculados. As <b>210.000 iterações</b> tornam cada tentativa de adivinhação lenta o suficiente para inviabilizar força bruta, mesmo que alguém copie o banco inteiro. Tudo isso vem da biblioteca padrão do Java, em <code>javax.crypto</code> — nenhuma dependência externa foi adicionada para isso.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Prova de funcionamento</p>
+      <h2>O que foi executado de verdade</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Nada aqui é previsão. Estas são saídas reais dos comandos rodados em 28/08/2026, na máquina que vai ser usada na apresentação.</p>
+    </div>
+
+    <div class="evidencia">
+      <div class="ev-head"><span class="cmd">mvnw exec:java -Dexec.mainClass=br.com.custocerto.util.DiagnosticoAmbiente</span></div>
+      <div class="ev-body"><pre>=== Diagnóstico do ambiente - Custo Certo ===
+
+1. Configuração
+   URL JDBC: jdbc:mysql://localhost:3306/custo_certo?useSSL=false&amp;connectTimeout=3000
+   Usuário.: custocerto
+
+2. Conexão com o MySQL
+   <span class="ok">OK</span>, servidor respondeu.
+
+3. Leitura da tabela usuarios
+   5 contas encontradas:
+     - admin@custocerto.com.br     [Administrador]
+     - camila@letscoffee.com.br    [Gestor]  (inativa)
+     - denilson@letscoffee.com.br  [Gestor]
+     - marina@letscoffee.com.br    [Operador]
+     - rafael@letscoffee.com.br    [Operador]
+
+4. Autenticação
+   <span class="ok">OK</span>   entrou: Administrador do Sistema [Administrador] · gerencia usuários: <b>sim</b> · indicadores: <b>sim</b>
+   <span class="ok">OK</span>   entrou: Marina Alves Prado [Operador] · gerencia usuários: <b>não</b> · indicadores: <b>não</b>
+   <span class="ok">OK</span>   recusou admin@custocerto.com.br: E-mail ou senha incorretos.
+   <span class="ok">OK</span>   recusou camila@letscoffee.com.br: Esta conta está inativa. Procure o administrador do sistema.
+   <span class="ok">OK</span>   recusou naoexiste@custocerto.com.br: E-mail ou senha incorretos.
+
+=== Fim do diagnóstico ===</pre></div>
+    </div>
+
+    <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">As duas linhas do meio são a demonstração do controle por perfil: o mesmo código, com contas diferentes, devolve permissões diferentes. E as duas últimas recusas devolvem <b>exatamente a mesma frase</b> — uma para senha errada, outra para e-mail inexistente. É proposital.</p>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>O que foi verificado</th><th>Resultado</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Compilação do projeto Java</td><td><span class="status feito">sem erros</span></td></tr>
+          <tr><td>Geração do Javadoc</td><td><span class="status feito">gerou em target/reports/apidocs</span></td></tr>
+          <tr><td>Aplicação JavaFX abrindo a janela</td><td><span class="status feito">abriu, sem aviso de banco indisponível</span></td></tr>
+          <tr><td>Script SQL rodado duas vezes seguidas</td><td><span class="status feito">continuou com 5 e 6 linhas</span></td></tr>
+          <tr><td>Restrições presentes no banco</td><td><span class="status feito">6 restrições nomeadas</span></td></tr>
+          <tr><td>Login aceito, por perfil</td><td><span class="status feito">administrador e operador</span></td></tr>
+          <tr><td>Login recusado, nos 3 cenários</td><td><span class="status feito">senha errada, conta inativa, e-mail inexistente</span></td></tr>
+          <tr><td>Gravação em log_acesso</td><td><span class="status feito">5 tentativas registradas, com IP de origem</span></td></tr>
+          <tr><td>Porta 3306 liberada no firewall para a LAN</td><td><span class="status feito">regra restrita à sub-rede local</span></td></tr>
+          <tr><td>Conexão a partir de outra máquina da rede</td><td><span class="status aberto">não testado — falta a segunda máquina</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>O único item não verificado</b> é a conexão vinda de outra máquina, que precisa de um segundo computador na mesma rede. Vale fazer esse teste antes da apresentação, e não durante: basta alguém do grupo trocar <code>db.host</code> pelo IP da máquina servidora e rodar o diagnóstico.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Ambiente</p>
+      <h2>O que está instalado, e como ligar</h2>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Componente</th><th>Versão</th><th>Observação</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>MySQL Community Server</td><td class="file">8.4.0 LTS</td><td>Instalação <b>portátil</b>, por ZIP, sem privilégio de administrador. Não é serviço do Windows: precisa ser ligado pelo atalho antes de usar o sistema.</td></tr>
+          <tr><td>JDK</td><td class="file">21 ou superior</td><td>A máquina de desenvolvimento tem o 26. O projeto compila para 21 para funcionar nas cinco máquinas.</td></tr>
+          <tr><td>JavaFX</td><td class="file">21.0.12</td><td>Entra como dependência do Maven — ninguém instala SDK.</td></tr>
+          <tr><td>Driver JDBC</td><td class="file">mysql-connector-j 9.7.0</td><td>Também resolvido pelo Maven.</td></tr>
+          <tr><td>Maven</td><td class="file">3.9.16, via wrapper</td><td>O <code>mvnw</code> versionado baixa o próprio Maven. Cada integrante precisa apenas do JDK.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>Antes de apresentar, nesta ordem:</b> ligar o banco pelo <code>iniciar-mysql.bat</code> e deixar a janela aberta; rodar o diagnóstico e conferir que tudo sai com OK; só então abrir a aplicação com <code>mvnw javafx:run</code>. Se o banco não estiver ligado, a janela abre normalmente mas nenhum login funciona.
+    </div>
+  </section>
+
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Modelo completo</p>
+      <h2>As quatro tabelas do sistema em MySQL</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">O banco deixou de ser só a autenticação. As tabelas de estoque saíram do SQLite e foram convertidas seguindo o caminho <b>D6-A</b>: dinheiro em <code>DECIMAL</code>, datas em <code>DATE</code> e domínios fechados em <code>ENUM</code>.</p>
+    </div>
+
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 820 470" role="img" aria-label="Diagrama entidade-relacionamento das quatro tabelas: usuarios relaciona-se um-para-muitos com log_acesso, e ingredientes relaciona-se um-para-muitos com movimentacoes_estoque. Os dois pares são independentes entre si.">
+        <defs>
+          <marker id="pe2" viewBox="0 0 12 12" refX="1" refY="6" markerWidth="12" markerHeight="12" orient="auto">
+            <path d="M 12 0 L 1 6 L 12 12" fill="none" stroke="var(--accent)" stroke-width="1.4"/>
+          </marker>
+        </defs>
+
+        <text x="30" y="18" font-size="10.5" font-weight="700" fill="var(--ink-3)" letter-spacing="0.08em">CONTROLE DE ACESSO</text>
+
+        <rect x="30" y="28" width="300" height="176" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="30" y="28" width="300" height="30" rx="3" fill="var(--accent-soft)" stroke="none"/>
+        <text x="44" y="48" font-size="12.5" font-weight="700" fill="var(--accent)">usuarios</text>
+        <text x="316" y="48" font-size="10" text-anchor="end" fill="var(--ink-3)">5 linhas</text>
+        <text x="44" y="76"  font-size="11" font-weight="700" fill="var(--ink)">id</text>
+        <text x="316" y="76"  font-size="9.5" text-anchor="end" fill="var(--brass)">PK</text>
+        <text x="44" y="96"  font-size="11" font-weight="700" fill="var(--ink)">email</text>
+        <text x="316" y="96"  font-size="9.5" text-anchor="end" fill="var(--good)">UNIQUE · CHECK</text>
+        <text x="44" y="116" font-size="11" fill="var(--ink-2)">senha_hash · salt</text>
+        <text x="44" y="136" font-size="11" fill="var(--ink-2)">perfil</text>
+        <text x="316" y="136" font-size="9.5" text-anchor="end" fill="var(--warn)">ENUM(3)</text>
+        <text x="44" y="156" font-size="11" fill="var(--ink-2)">ativo</text>
+        <text x="316" y="156" font-size="9.5" text-anchor="end" fill="var(--ink-3)">DEFAULT TRUE</text>
+        <text x="44" y="176" font-size="11" fill="var(--ink-2)">nome · criado_em</text>
+        <text x="44" y="196" font-size="11" fill="var(--ink-2)">ultimo_acesso</text>
+
+        <line x1="330" y1="110" x2="486" y2="110" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#pe2)"/>
+        <text x="342" y="102" font-size="11" font-weight="700" fill="var(--accent)">1</text>
+        <text x="470" y="102" font-size="11" font-weight="700" text-anchor="end" fill="var(--accent)">N</text>
+        <text x="408" y="130" font-size="10" text-anchor="middle" fill="var(--ink-3)">registra</text>
+
+        <rect x="490" y="28" width="300" height="176" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="490" y="28" width="300" height="30" rx="3" fill="var(--accent-soft)" stroke="none"/>
+        <text x="504" y="48" font-size="12.5" font-weight="700" fill="var(--accent)">log_acesso</text>
+        <text x="776" y="48" font-size="10" text-anchor="end" fill="var(--ink-3)">6 + tentativas reais</text>
+        <text x="504" y="76"  font-size="11" font-weight="700" fill="var(--ink)">id</text>
+        <text x="776" y="76"  font-size="9.5" text-anchor="end" fill="var(--brass)">PK</text>
+        <text x="504" y="96"  font-size="11" font-weight="700" fill="var(--ink)">usuario_id</text>
+        <text x="776" y="96"  font-size="9.5" text-anchor="end" fill="var(--accent)">FK · aceita NULL</text>
+        <text x="504" y="116" font-size="11" fill="var(--ink-2)">email_digitado</text>
+        <text x="504" y="136" font-size="11" fill="var(--ink-2)">sucesso</text>
+        <text x="504" y="156" font-size="11" fill="var(--ink-2)">origem</text>
+        <text x="504" y="176" font-size="11" fill="var(--ink-2)">data_hora</text>
+        <text x="504" y="196" font-size="9.5" fill="var(--ink-3)">ON DELETE SET NULL</text>
+
+        <line x1="30" y1="232" x2="790" y2="232" stroke="var(--line)" stroke-width="1"/>
+
+        <text x="30" y="258" font-size="10.5" font-weight="700" fill="var(--ink-3)" letter-spacing="0.08em">ESTOQUE E CUSTO — MIGRADO DO SQLITE EM 28/08</text>
+
+        <rect x="30" y="268" width="300" height="176" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="30" y="268" width="300" height="30" rx="3" fill="var(--accent-soft)" stroke="none"/>
+        <text x="44" y="288" font-size="12.5" font-weight="700" fill="var(--accent)">ingredientes</text>
+        <text x="316" y="288" font-size="10" text-anchor="end" fill="var(--ink-3)">8 linhas</text>
+        <text x="44" y="316" font-size="11" font-weight="700" fill="var(--ink)">id</text>
+        <text x="316" y="316" font-size="9.5" text-anchor="end" fill="var(--brass)">PK</text>
+        <text x="44" y="336" font-size="11" font-weight="700" fill="var(--ink)">nome</text>
+        <text x="316" y="336" font-size="9.5" text-anchor="end" fill="var(--good)">UNIQUE</text>
+        <text x="44" y="356" font-size="11" fill="var(--ink-2)">unidade</text>
+        <text x="316" y="356" font-size="9.5" text-anchor="end" fill="var(--warn)">ENUM(5)</text>
+        <text x="44" y="376" font-size="11" fill="var(--ink-2)">preco</text>
+        <text x="316" y="376" font-size="9.5" text-anchor="end" fill="var(--ink-3)">DECIMAL(10,2)</text>
+        <text x="44" y="396" font-size="11" fill="var(--ink-2)">qtd · qtd_max</text>
+        <text x="316" y="396" font-size="9.5" text-anchor="end" fill="var(--ink-3)">DECIMAL(10,3)</text>
+        <text x="44" y="416" font-size="11" fill="var(--ink-2)">validade</text>
+        <text x="316" y="416" font-size="9.5" text-anchor="end" fill="var(--ink-3)">DATE · NULL</text>
+        <text x="44" y="436" font-size="9.5" fill="var(--ink-3)">CHECK: preco e quantidades &gt;= 0</text>
+
+        <line x1="330" y1="350" x2="486" y2="350" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#pe2)"/>
+        <text x="342" y="342" font-size="11" font-weight="700" fill="var(--accent)">1</text>
+        <text x="470" y="342" font-size="11" font-weight="700" text-anchor="end" fill="var(--accent)">N</text>
+        <text x="408" y="370" font-size="10" text-anchor="middle" fill="var(--ink-3)">movimenta</text>
+
+        <rect x="490" y="268" width="300" height="176" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+        <rect x="490" y="268" width="300" height="30" rx="3" fill="var(--accent-soft)" stroke="none"/>
+        <text x="504" y="288" font-size="12.5" font-weight="700" fill="var(--accent)">movimentacoes_estoque</text>
+        <text x="776" y="288" font-size="10" text-anchor="end" fill="var(--ink-3)">10 linhas</text>
+        <text x="504" y="316" font-size="11" font-weight="700" fill="var(--ink)">id</text>
+        <text x="776" y="316" font-size="9.5" text-anchor="end" fill="var(--brass)">PK</text>
+        <text x="504" y="336" font-size="11" font-weight="700" fill="var(--ink)">ingrediente_id</text>
+        <text x="776" y="336" font-size="9.5" text-anchor="end" fill="var(--accent)">FK · NOT NULL</text>
+        <text x="504" y="356" font-size="11" fill="var(--ink-2)">tipo</text>
+        <text x="776" y="356" font-size="9.5" text-anchor="end" fill="var(--warn)">ENUM(entrada, saida)</text>
+        <text x="504" y="376" font-size="11" fill="var(--ink-2)">quantidade</text>
+        <text x="776" y="376" font-size="9.5" text-anchor="end" fill="var(--ink-3)">DECIMAL(10,3) · CHECK &gt; 0</text>
+        <text x="504" y="396" font-size="11" fill="var(--ink-2)">preco_unitario</text>
+        <text x="776" y="396" font-size="9.5" text-anchor="end" fill="var(--ink-3)">DECIMAL(10,2) · NULL</text>
+        <text x="504" y="416" font-size="11" fill="var(--ink-2)">observacao · data</text>
+        <text x="504" y="436" font-size="9.5" fill="var(--ink-3)">ON DELETE CASCADE</text>
+      </svg>
+      </div>
+      <figcaption>Os dois pares são independentes: quem acessa o sistema e o que o sistema controla. <b>As duas chaves estrangeiras se comportam de forma oposta, e é de propósito.</b> Em <code>log_acesso</code> o <code>ON DELETE SET NULL</code> preserva o histórico de quem foi excluído, porque auditoria não pode desaparecer. Em <code>movimentacoes_estoque</code> o <code>ON DELETE CASCADE</code> apaga junto, porque uma movimentação de um insumo que não existe mais não significa nada. Mesma ferramenta, decisões contrárias, cada uma justificada pelo que a tabela representa.</figcaption>
+    </figure>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Coluna no SQLite</th><th>Virou no MySQL</th><th>Por quê</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="file">preco REAL</td>
+            <td class="file">DECIMAL(10,2)</td>
+            <td>Ponto flutuante acumula erro de centavo. Num sistema que existe para apurar custo, esse erro apareceria direto no CMV.</td>
+          </tr>
+          <tr>
+            <td class="file">qtd REAL</td>
+            <td class="file">DECIMAL(10,3)</td>
+            <td>Três casas decimais dão precisão de grama, que é o que a balança lê.</td>
+          </tr>
+          <tr>
+            <td class="file">validade TEXT</td>
+            <td class="file">DATE</td>
+            <td>Data como texto não permite comparar nem ordenar de forma confiável. Com <code>DATE</code>, o alerta de vencimento vira uma consulta simples.</td>
+          </tr>
+          <tr>
+            <td class="file">criado_em TEXT</td>
+            <td class="file">DATETIME DEFAULT CURRENT_TIMESTAMP</td>
+            <td>O banco carimba a hora sozinho, e a aplicação não pode errar isso.</td>
+          </tr>
+          <tr>
+            <td class="file">CHECK (unidade IN ...)</td>
+            <td class="file">ENUM('kg','g','L','ml','un')</td>
+            <td>O domínio fechado fica declarado no tipo da coluna, e o MySQL recusa qualquer valor fora da lista.</td>
+          </tr>
+          <tr>
+            <td class="file">CHECK (tipo IN ...)</td>
+            <td class="file">ENUM('entrada','saida')</td>
+            <td>Mesma ideia, aplicada à natureza da movimentação.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Tempo real</p>
+      <h2>A balança, e onde estava a demora</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">O desktop passou a receber o peso ao vivo, pelo mesmo fluxo que o painel web já consumia. Ao investigar a latência, o gargalo apareceu num lugar diferente do esperado: <b>não era a rede, era o firmware</b>.</p>
+    </div>
+
+    <figure>
+      <div class="fig-scroll">
+      <svg viewBox="0 0 820 330" role="img" aria-label="Comparação da cadeia de leitura antes e depois. Antes: o firmware bloqueava cerca de 500 ms pedindo a média de cinco amostras ao HX711, mais uma consulta de tara bloqueante, resultando em menos de duas atualizações por segundo. Depois: uma amostra por vez com filtro em software, tara na resposta do próprio envio, resultando em cerca de dez atualizações por segundo.">
+        <defs>
+          <marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--crit)"/>
+          </marker>
+          <marker id="sb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--good)"/>
+          </marker>
+        </defs>
+
+        <text x="30" y="20" font-size="11" font-weight="700" fill="var(--crit)" letter-spacing="0.08em">ANTES · MENOS DE 2 ATUALIZAÇÕES POR SEGUNDO</text>
+
+        <rect x="30" y="34" width="170" height="52" rx="3" fill="none" stroke="var(--crit)" stroke-width="2"/>
+        <text x="44" y="54" font-size="11.5" font-weight="700" fill="var(--ink)">get_units(5)</text>
+        <text x="44" y="70" font-size="10.5" fill="var(--crit)">~500 ms bloqueando</text>
+
+        <line x1="200" y1="60" x2="242" y2="60" stroke="var(--crit)" stroke-width="1.5" marker-end="url(#sa)"/>
+
+        <rect x="248" y="34" width="150" height="52" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <text x="262" y="54" font-size="11.5" fill="var(--ink-2)">POST peso</text>
+        <text x="262" y="70" font-size="10.5" fill="var(--ink-3)">conexão nova a cada envio</text>
+
+        <line x1="398" y1="60" x2="440" y2="60" stroke="var(--crit)" stroke-width="1.5" marker-end="url(#sa)"/>
+
+        <rect x="446" y="34" width="160" height="52" rx="3" fill="none" stroke="var(--crit)" stroke-width="1.2"/>
+        <text x="460" y="54" font-size="11.5" fill="var(--ink-2)">GET tara</text>
+        <text x="460" y="70" font-size="10.5" fill="var(--crit)">+1 chamada bloqueante/s</text>
+
+        <line x1="606" y1="60" x2="648" y2="60" stroke="var(--ink-3)" stroke-width="1.5" marker-end="url(#sa)"/>
+
+        <rect x="654" y="34" width="136" height="52" rx="3" fill="none" stroke="var(--ink-3)" stroke-width="1.2"/>
+        <text x="668" y="54" font-size="11.5" fill="var(--ink-2)">Node · SSE</text>
+        <text x="668" y="70" font-size="10.5" fill="var(--good)">já era push, ~0 ms</text>
+
+        <text x="30" y="112" font-size="10.5" fill="var(--ink-3)">O comentário no código dizia "envia peso 5x/s". O laço levava mais de meio segundo só na leitura.</text>
+
+        <line x1="30" y1="136" x2="790" y2="136" stroke="var(--line)" stroke-width="1"/>
+
+        <text x="30" y="164" font-size="11" font-weight="700" fill="var(--good)" letter-spacing="0.08em">DEPOIS · CERCA DE 10 ATUALIZAÇÕES POR SEGUNDO</text>
+
+        <rect x="30" y="178" width="170" height="62" rx="3" fill="none" stroke="var(--good)" stroke-width="2"/>
+        <text x="44" y="198" font-size="11.5" font-weight="700" fill="var(--ink)">is_ready() +</text>
+        <text x="44" y="214" font-size="11.5" font-weight="700" fill="var(--ink)">get_units(1)</text>
+        <text x="44" y="230" font-size="10.5" fill="var(--good)">~100 ms, sem bloquear</text>
+
+        <line x1="200" y1="209" x2="242" y2="209" stroke="var(--good)" stroke-width="1.5" marker-end="url(#sb)"/>
+
+        <rect x="248" y="178" width="150" height="62" rx="3" fill="none" stroke="var(--good)" stroke-width="1.5"/>
+        <text x="262" y="198" font-size="11.5" fill="var(--ink-2)">média móvel</text>
+        <text x="262" y="214" font-size="10.5" fill="var(--ink-3)">filtro em software,</text>
+        <text x="262" y="230" font-size="10.5" fill="var(--ink-3)">custo zero de tempo</text>
+
+        <line x1="398" y1="209" x2="440" y2="209" stroke="var(--good)" stroke-width="1.5" marker-end="url(#sb)"/>
+
+        <rect x="446" y="178" width="160" height="62" rx="3" fill="none" stroke="var(--good)" stroke-width="1.5"/>
+        <text x="460" y="198" font-size="11.5" fill="var(--ink-2)">POST peso</text>
+        <text x="460" y="214" font-size="10.5" fill="var(--ink-3)">conexão reaproveitada,</text>
+        <text x="460" y="230" font-size="10.5" fill="var(--good)">tara volta na resposta</text>
+
+        <line x1="606" y1="209" x2="648" y2="209" stroke="var(--good)" stroke-width="1.5" marker-end="url(#sb)"/>
+
+        <rect x="654" y="178" width="136" height="62" rx="3" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="2"/>
+        <text x="668" y="198" font-size="11.5" font-weight="700" fill="var(--accent)">Node · SSE</text>
+        <text x="668" y="214" font-size="10.5" fill="var(--ink-2)">agora também</text>
+        <text x="668" y="230" font-size="10.5" fill="var(--ink-2)">para o desktop</text>
+
+        <text x="30" y="272" font-size="10.5" fill="var(--ink-3)">O HX711 amostra a 10 Hz. Pedir mais que uma leitura a cada 100 ms não traria dado novo — este é o limite do sensor.</text>
+
+        <rect x="30" y="288" width="760" height="34" rx="3" fill="none" stroke="var(--warn)" stroke-width="1" stroke-dasharray="5 4"/>
+        <text x="44" y="309" font-size="10.5" fill="var(--warn)">Firmware e backend passam a andar juntos: a tara agora volta na resposta do POST, então é obrigatório regravar o ESP32 ao publicar o backend.</text>
+      </svg>
+      </div>
+      <figcaption>Quatro mudanças, todas no lado do dispositivo. <b>A média de cinco amostras saiu</b> — o HX711 entrega uma leitura a cada 100 ms, então pedir cinco travava o laço por meio segundo; a estabilidade voltou por um filtro de média móvel em software, que não custa tempo. <b>A leitura passou a ser condicional</b>, com <code>is_ready()</code>, para nunca esperar o chip. <b>A conexão HTTP passou a ser reaproveitada</b>, em vez de um handshake TCP por envio. E <b>a tara voltou a viajar na resposta do próprio envio de peso</b>, eliminando uma requisição bloqueante por segundo.</figcaption>
+    </figure>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Onde</th><th>O que mudou</th><th>Efeito na latência</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="file">firmware/src/main.cpp</td>
+            <td><code>get_units(5)</code> virou <code>is_ready()</code> + <code>get_units(1)</code> com média móvel</td>
+            <td><span class="sev keep">−400 ms</span> por ciclo</td>
+          </tr>
+          <tr>
+            <td class="file">firmware/src/main.cpp</td>
+            <td><code>HTTPClient</code> estático com <code>setReuse(true)</code></td>
+            <td><span class="sev keep">−1 handshake</span> por envio</td>
+          </tr>
+          <tr>
+            <td class="file">firmware/src/main.cpp</td>
+            <td>Consulta de tara removida; passa a ler a resposta do POST</td>
+            <td><span class="sev keep">−1 chamada</span> bloqueante por segundo</td>
+          </tr>
+          <tr>
+            <td class="file">balancaController.ts</td>
+            <td><code>POST /balanca/peso</code> devolve <code>tarar</code> junto do <code>ok</code></td>
+            <td><span class="sev edit">exige regravar</span> o firmware</td>
+          </tr>
+          <tr>
+            <td class="file">desktop/ BalancaClient.java</td>
+            <td>Consome o fluxo SSE do backend, com reconexão automática</td>
+            <td><span class="sev keep">~0 ms</span> somados pelo desktop</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>Por que o desktop fala HTTP aqui, se a decisão D1-A diz JDBC direto?</b> Porque o peso instantâneo <b>não existe no banco</b>: ele vive na memória do backend e é descartado a cada nova leitura. Não é dado persistido, é sinal de sensor. Todo o acesso a dados do sistema — insumos, movimentações, usuários — continua sendo feito pelo próprio Java via JDBC. Esta é a única porta HTTP da aplicação, e ela existe para um valor que o MySQL nunca vai ter.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">O sistema desktop</p>
+      <h2>As quatro telas, e quem enxerga cada uma</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">A aplicação Java deixou de ser só a autenticação: reproduz agora a navegação e as funções do painel web, com a mesma paleta. O menu lateral é montado a partir das permissões do perfil, então <b>o que cada pessoa vê muda de acordo com quem entrou</b>.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Tela</th><th>O que faz</th><th>Administrador</th><th>Gestor</th><th>Operador</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><b>Dashboard</b></td>
+            <td>Quatro indicadores (valor em estoque, itens em alerta, CMV, vencimentos), composição do estoque por valor, status dos insumos, medidor de CMV e barras de nível.</td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status aberto">não vê</span></td>
+          </tr>
+          <tr>
+            <td><b>Balança</b></td>
+            <td>Peso ao vivo vindo do ESP32, tara, e a tabela de custo da porção calculada em tempo real. Confirmar dá baixa no estoque.</td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status feito">vê</span></td>
+          </tr>
+          <tr>
+            <td><b>Estoque</b></td>
+            <td>Cartões dos insumos com barra de nível, etiqueta de validade e faixa de alerta. Cadastrar, editar, excluir, registrar compra e registrar retirada.</td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status feito">vê</span></td>
+          </tr>
+          <tr>
+            <td><b>Evolução de Preços</b></td>
+            <td>Uma linha por insumo mostrando a variação do custo de aquisição, mais o histórico de entradas em tabela.</td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status feito">vê</span></td>
+            <td><span class="status aberto">não vê</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>O que mostrar na banca, em ordem:</b> entre como administrador e percorra as quatro telas. Saia e entre como <code>marina@letscoffee.com.br</code> — a seção "Análises" <b>desaparece inteira</b> do menu lateral, e sobram Balança e Estoque. Essa é a demonstração mais direta do controle de acesso por perfil, e ela não depende de nenhum texto explicativo.
+    </div>
+
+    <div class="sec-head" style="margin-top:0.5rem">
+      <h3 style="font-size:var(--step-1);font-weight:620">A transação que protege o estoque</h3>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Registrar uma compra são duas escritas: gravar a movimentação e alterar o saldo do insumo. Se a segunda falhasse depois da primeira, o estoque passaria a mentir. As duas acontecem dentro de uma transação.</p>
+    </div>
+
+    <div class="evidencia">
+      <div class="ev-head"><span>Teste automático em</span><span class="cmd">DiagnosticoAmbiente</span></div>
+      <div class="ev-body"><pre>5. Estoque em MySQL
+   8 insumos cadastrados:
+     - Açúcar Cristal                0.8 kg      <span class="no">16%</span>  277d p/ vencer
+     - Café em Grãos Arábica         3.2 kg      64%  125d p/ vencer
+     - Canela em Pó                  450 g       45%  194d p/ vencer
+     - Chocolate em Pó 50%           1.5 kg      50%  145d p/ vencer
+     - Copo Descartável 300ml        320 un      64%  sem validade
+     - Creme de Leite Fresco           2 L       50%  8d p/ vencer
+     - Farinha de Trigo              4.2 kg      53%  18d p/ vencer
+     - Leite Integral                7.5 L       75%  <span class="no">VENCIDO</span>
+
+   Indicadores do painel:
+     valor em estoque..: R$ 420.64
+     itens em alerta...: 1
+     vencidos..........: 1
+     CMV estimado......: <span class="ok">28,6% (Dentro do ideal)</span>
+
+6. Transação: retirada maior que o estoque deve ser desfeita
+   <span class="ok">OK</span>   recusou: A retirada é maior do que o estoque disponível (0.8).
+   <span class="ok">OK</span>   saldo de Açúcar Cristal continua 0.8 kg — nada foi gravado pela metade.</pre></div>
+    </div>
+
+    <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">O <code>SELECT ... FOR UPDATE</code> trava a linha do insumo até o fim da transação, o que impede duas máquinas da rede local de lerem o mesmo saldo ao mesmo tempo e gravarem valores conflitantes. É a razão técnica pela qual as tabelas usam <b>InnoDB</b>: o outro motor do MySQL não faz transação nem chave estrangeira.</p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Onde paramos</p>
+      <h2>O que falta antes da apresentação</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Trabalho interrompido em 28/08 à noite, com tudo compilando e o banco carregado. Esta é a lista do que ficou pela metade, para retomar amanhã sem redescobrir nada.</p>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Pendência</th><th>Situação</th><th>Detalhe</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Regravar o firmware do ESP32</td>
+            <td><span class="status aberto">obrigatório</span></td>
+            <td>O código novo do <code>main.cpp</code> não foi gravado nem testado — não havia placa conectada. E como a tara passou a voltar na resposta do POST, backend e firmware precisam subir juntos.</td>
+          </tr>
+          <tr>
+            <td>Testar o peso ao vivo no desktop</td>
+            <td><span class="status aberto">não testado</span></td>
+            <td>O cliente SSE compila, mas nunca recebeu leitura real. Dá para testar sem a balança: subir o backend e simular o ESP32 com um POST manual em <code>/balanca/peso</code>.</td>
+          </tr>
+          <tr>
+            <td>Acabar o acabamento visual</td>
+            <td><span class="status parcial">metade</span></td>
+            <td>Os ícones vetoriais entraram no menu lateral e no cabeçalho. Faltam os cartões de insumo, os indicadores do Dashboard e o refino de sombras e espaçamento.</td>
+          </tr>
+          <tr>
+            <td>Conectar o painel web ao MySQL</td>
+            <td><span class="status aberto">em aberto</span></td>
+            <td>O backend Node ainda lê SQLite. Hoje as duas interfaces mostram <b>dados de bancos diferentes</b> — o desktop já está no MySQL, o site não.</td>
+          </tr>
+          <tr>
+            <td>Migrar receitas e receita_ingredientes</td>
+            <td><span class="status aberto">em aberto</span></td>
+            <td>As duas tabelas continuam só no SQLite, vazias. Precisam existir em MySQL com 5 linhas cada para fechar o requisito do Prof. Marlon.</td>
+          </tr>
+          <tr>
+            <td>Testar acesso de outra máquina</td>
+            <td><span class="status aberto">falta 2º PC</span></td>
+            <td>A porta 3306 já está liberada no firewall, restrita à sub-rede local. Falta alguém apontar o <code>db.host</code> para o IP da máquina servidora e rodar o diagnóstico.</td>
+          </tr>
+          <tr>
+            <td>Commitar o trabalho</td>
+            <td><span class="status aberto">nada enviado</span></td>
+            <td>Tudo está na máquina do Guilherme, sem commit nem push. A <code>main</code> remota segue intacta.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>Decisões que o código antecipou sem o grupo:</b> além de D1, D7 e o build, o trabalho de 28/08 também resolveu na prática <b>D6</b> (conversão de tipos — dinheiro em <code>DECIMAL</code>, datas em <code>DATE</code>, domínios em <code>ENUM</code>) e <b>D8</b> (recomeçar do seed em vez de migrar os dados do SQLite). Nenhuma das duas passou pela reunião. Se o grupo discordar, o custo de refazer ainda é baixo — são dois arquivos SQL e os DAOs correspondentes.
+    </div>
+  </section>
+
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Consequências</p>
+      <h2>O que é afetado no repositório</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Mapa considerando o caminho sugerido (D1-A). Serve para dimensionar o trabalho e dividir entre as pessoas.</p>
+    </div>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Arquivo / área</th><th>Situação</th><th>O que acontece</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="file">src/config/database.ts</td>
+            <td><span class="sev rewrite">reescrever</span></td>
+            <td>Trocar <code>@libsql/client</code> por <code>mysql2</code>, com pool de conexões. A migration inline da coluna <code>validade</code> some.</td>
+          </tr>
+          <tr>
+            <td class="file">src/database/schema.sql</td>
+            <td><span class="sev rewrite">reescrever</span></td>
+            <td>Vira DDL de MySQL. É a entrega principal do Marlon.</td>
+          </tr>
+          <tr>
+            <td class="file">src/database/seed.ts</td>
+            <td><span class="sev rewrite">reescrever</span></td>
+            <td>Passa a ter no mínimo 5 INSERTs por tabela, incluindo as de receita.</td>
+          </tr>
+          <tr>
+            <td class="file">src/repositories/</td>
+            <td><span class="sev edit">ajustar</span></td>
+            <td>Placeholders e o retorno do <code>lastInsertRowid</code> mudam de formato entre libSQL e mysql2.</td>
+          </tr>
+          <tr>
+            <td class="file">.env.example</td>
+            <td><span class="sev edit">ajustar</span></td>
+            <td><code>DB_URL</code> e <code>DB_AUTH_TOKEN</code> dão lugar a host, porta, usuário, senha e nome do banco.</td>
+          </tr>
+          <tr>
+            <td class="file">render.yaml</td>
+            <td><span class="sev edit">ajustar</span></td>
+            <td>Depende de D3. Se o deploy for congelado, fica como está por enquanto.</td>
+          </tr>
+          <tr>
+            <td class="file">cypress/</td>
+            <td><span class="sev edit">ajustar</span></td>
+            <td>Os 4 testes E2E rodam contra o painel web e assumem o estado do seed — vão quebrar quando os dados mudarem.</td>
+          </tr>
+          <tr>
+            <td class="file">README.md</td>
+            <td><span class="sev edit">ajustar</span></td>
+            <td>Diagrama de arquitetura, tabela de tecnologias, instalação e deploy citam SQLite/Turso em vários pontos.</td>
+          </tr>
+          <tr>
+            <td class="file">desktop/</td>
+            <td><span class="sev keep">criado</span></td>
+            <td>Projeto JavaFX em camadas (<span class="mono">view → service → dao → model</span>), com a tela de login, a tela principal por perfil, o acesso JDBC e o Javadoc gerando. Falta a tela de gestão de usuários e ligar os demais módulos.</td>
+          </tr>
+          <tr>
+            <td class="file">src/controllers, services, routes, schemas</td>
+            <td><span class="sev keep">preservar</span></td>
+            <td>Não dependem do banco diretamente. A separação em camadas que já existe é o que salva aqui.</td>
+          </tr>
+          <tr>
+            <td class="file">firmware/</td>
+            <td><span class="sev keep">preservar</span></td>
+            <td>Intocado no caminho D1-A. Só muda se o grupo escolher D1-C.</td>
+          </tr>
+          <tr>
+            <td class="file">public/</td>
+            <td><span class="sev keep">preservar</span></td>
+            <td>Continua consumindo a mesma API. A GUI Java soma, não substitui.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Depois da reunião</p>
+      <h2>Próximos passos</h2>
+    </div>
+    <ol class="steps">
+      <li><span><span class="st-title">Validar com o grupo as três decisões já fechadas</span><span class="st-note">D1-A, JavaFX e Maven foram escolhidas fora da reunião para destravar o código. Se o grupo discordar de alguma, é melhor saber agora — a tela de login é pequena o suficiente para refazer.</span></span></li>
+      <li><span><span class="st-title">Fechar D2: onde o MySQL vai rodar na apresentação</span><span class="st-note">Virou a decisão mais urgente. O requisito de acesso via rede local só é demonstrável com um servidor combinado e a porta 3306 liberada entre as máquinas.</span></span></li>
+      <li><span><span class="st-title">Refazer D5 incluindo as tabelas de acesso</span><span class="st-note"><code>usuarios</code> e <code>log_acesso</code> já existem em MySQL e precisam aparecer no DER entregue ao Prof. Marlon, junto das tabelas de insumos e movimentações.</span></span></li>
+      <li><span><span class="st-title">Levantar as datas de entrega das duas matérias</span><span class="st-note">É o dado que falta para ordenar as frentes. Se a entrega do DER vier antes, D5 e D6 viram prioridade sobre a GUI.</span></span></li>
+      <li><span><span class="st-title">Dividir as frentes entre as 5 pessoas</span><span class="st-note">Sugestão de recorte: modelagem (DER + DDL), migração do backend para mysql2, GUI Java, camada JDBC + Javadoc, e testes/documentação.</span></span></li>
+      <li><span><span class="st-title">Criar as branches temáticas e começar</span><span class="st-note">Seguindo o padrão que o grupo já usa — <code>mysql_schema</code>, <code>java_gui</code> — sempre a partir da <code>main</code> atualizada, com PR no fim.</span></span></li>
+    </ol>
+
+    <div class="callout">
+      <b>Duas coisas que não estão decididas aqui e precisam de alguém:</b> as datas de entrega de cada matéria, e se algum integrante já adiantou trabalho fora do repositório (DER em ferramenta de diagrama, protótipo Java local). Nenhuma das duas dá para descobrir olhando o código.
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <p class="eyebrow">Apêndice</p>
+      <h2>Como abrir o projeto no Eclipse</h2>
+      <p class="prose" style="color:var(--ink-2);font-size:var(--step--1)">Passo a passo para quem vai clonar o repositório e rodar o app desktop pela primeira vez. São nove passos; os quatro primeiros são de ambiente e só se faz uma vez.</p>
+    </div>
+
+    <div class="callout">
+      <b>Antes de tudo, uma armadilha conhecida:</b> uma versão antiga do Eclipse <b>não abre este projeto</b>. Se o import não listar nada, quase sempre é isso — o Kepler (2013), por exemplo, foi feito para Java 7 e não entende <code>record</code>, <i>text blocks</i> nem o <code>pom.xml</code> moderno. É preciso o Eclipse <b>2024-03 ou mais novo</b>; o testado aqui foi o <b>2026-06</b>.
+    </div>
+
+    <ol class="steps">
+      <li><span>
+        <span class="st-title">Confirmar o JDK 21 ou superior</span>
+        <span class="st-note">No terminal, <code>java -version</code>. Se acusar 17 ou menos, baixe um JDK 21+ (Temurin ou Oracle). O projeto compila para Java 21 — versões anteriores não conseguem nem ler o código.</span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Instalar um Eclipse atual, se ainda não tiver</span>
+        <span class="st-note">Baixe o pacote <b>Eclipse IDE for Java Developers</b> em eclipse.org. É um <code>.zip</code>: basta extrair, não precisa de instalador nem de permissão de administrador. O pacote já vem com um Java 21 próprio, então ele funciona mesmo que o JDK do sistema seja outro.</span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Clonar o repositório num caminho curto, sem espaços e fora do OneDrive</span>
+        <span class="st-note">Por exemplo <code>C:\dev\custo-certo</code>. Espaços no caminho e pastas sincronizadas pelo OneDrive causam falhas difíceis de diagnosticar no Eclipse, que grava metadados o tempo todo.<br><span class="mono">git clone https://github.com/Custo-Certo/versao_3semestre.git C:\dev\custo-certo</span></span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Abrir o Eclipse num workspace também fora do OneDrive</span>
+        <span class="st-note">Na primeira tela, escolha algo como <code>C:\dev\workspace</code>. Se o seu workspace atual estiver dentro do OneDrive, troque em <i>File → Switch Workspace → Other</i>.</span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Importar como projeto Maven</span>
+        <span class="st-note"><i>File → Import → <b>Maven</b> → <b>Existing Maven Projects</b></i>. Não use <i>General → Existing Projects into Workspace</i>: aquele assistente procura um arquivo <code>.project</code>, que projetos Maven não têm, e a lista vem vazia.</span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Apontar para a pasta <code>desktop</code>, não para a raiz</span>
+        <span class="st-note">Em <i>Root Directory</i>, informe <code>C:\dev\custo-certo\desktop</code>. A raiz do repositório é o projeto Node e não tem <code>pom.xml</code>. Deve aparecer uma linha assim na lista:</span>
+      </span></li>
+    </ol>
+
+    <div class="evidencia">
+      <div class="ev-head"><span>O que a janela de import deve mostrar</span></div>
+      <div class="ev-body"><pre>Projects:
+  <b>[x] /pom.xml   br.com.custocerto:custo-certo-desktop:1.0.0:jar</b></pre></div>
+    </div>
+
+    <ol class="steps" start="7">
+      <li><span>
+        <span class="st-title">Esperar o m2e baixar as dependências</span>
+        <span class="st-note">Na primeira importação o Eclipse resolve o JavaFX e o driver JDBC do MySQL sozinho. Leva um ou dois minutos e aparece uma barra de progresso no canto inferior direito. Ninguém precisa baixar SDK do JavaFX à mão.</span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Criar o <code>config.properties</code> e preparar o banco</span>
+        <span class="st-note">Copie <code>config.properties.example</code> para <code>config.properties</code> dentro de <code>desktop/</code> e preencha os dados do seu MySQL. Depois rode os dois scripts de <code>src/main/resources/sql/</code>, na ordem. O <code>config.properties</code> não vai para o Git — cada pessoa tem o seu.</span>
+      </span></li>
+
+      <li><span>
+        <span class="st-title">Executar pela classe <code>Launcher</code></span>
+        <span class="st-note">Botão direito em <code>Launcher.java</code> → <i>Run As → Java Application</i>. <b>Não use a classe <code>App</code></b> — ver a explicação na tabela abaixo. Com o MySQL ligado, a tela de login abre.</span>
+      </span></li>
+    </ol>
+
+    <div class="sec-head" style="margin-top:0.5rem">
+      <h3 style="font-size:var(--step-1);font-weight:620">Se algo der errado</h3>
+    </div>
+
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>O que acontece</th><th>Causa</th><th>Solução</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>A lista de import fica <b>vazia</b></td>
+            <td>Eclipse antigo demais, ou assistente errado</td>
+            <td>Use um Eclipse 2024-03+ e o caminho <i>Maven → Existing Maven Projects</i>. Confirme que apontou para a pasta <code>desktop</code>.</td>
+          </tr>
+          <tr>
+            <td>A lista fica vazia mesmo com tudo certo</td>
+            <td>O projeto já está no workspace</td>
+            <td>O m2e esconde o que já foi importado. Confira o <i>Package Explorer</i>; se estiver lá, remova com <i>Delete</i> sem marcar "delete contents on disk" e importe de novo.</td>
+          </tr>
+          <tr>
+            <td><span class="mono">JavaFX runtime components are missing</span></td>
+            <td>Executou a classe <code>App</code></td>
+            <td>Use a <code>Launcher</code>. A <code>App</code> estende <code>Application</code>, e a JVM recusa iniciar uma classe assim quando o JavaFX está no classpath em vez do module path. A <code>Launcher</code> não estende nada e existe só para contornar isso.</td>
+          </tr>
+          <tr>
+            <td>Erros de compilação em <code>record</code>, <code>switch</code> ou blocos de texto</td>
+            <td>JRE do projeto abaixo de 21</td>
+            <td><i>Window → Preferences → Java → Installed JREs</i> e selecione um JDK 21+. Depois <i>Project → Clean</i>.</td>
+          </tr>
+          <tr>
+            <td>Aviso de banco indisponível ao abrir</td>
+            <td>MySQL desligado ou endereço errado</td>
+            <td>Ligue o servidor e confira <code>db.host</code>, <code>db.usuario</code> e <code>db.senha</code> no <code>config.properties</code>. A janela abre mesmo assim, mas o login não funciona.</td>
+          </tr>
+          <tr>
+            <td>Eclipse lento, travando ou com erros estranhos de arquivo</td>
+            <td>Workspace ou projeto dentro do OneDrive</td>
+            <td>Mova os dois para um caminho local curto, como <code>C:\dev</code>. O OneDrive sincroniza os metadados do Eclipse e trava arquivos em uso.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout">
+      <b>Sem IDE também funciona.</b> Pela linha de comando, dentro de <code>desktop/</code>: <code>mvnw javafx:run</code> abre a aplicação, <code>mvnw javadoc:javadoc</code> gera a documentação e <code>mvnw exec:java -Dexec.mainClass=br.com.custocerto.util.DiagnosticoAmbiente</code> testa o ambiente inteiro. O Maven Wrapper baixa tudo o que precisa — só o JDK precisa estar instalado.
+    </div>
+  </section>
+
+  <footer>
+    Documento de apoio à reunião de kickoff do 2º semestre de 2026, publicado em 18/08/2026 e atualizado em 28/08/2026 com as três decisões fechadas e a entrega da autenticação. Levantado a partir do estado do repositório <span class="mono">Custo-Certo/Project_Custo_Certo</span> na <span class="mono">main</span>, commit <span class="mono">27a8cab</span>, e dos requisitos das disciplinas de Banco de Dados e Programação Orientada a Objetos. O código da pasta <span class="mono">desktop/</span> ainda não foi commitado nem enviado ao repositório remoto.
+  </footer>
+
+</div>
+

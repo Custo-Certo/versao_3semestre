@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Coordenadas do projeto: identificam o artefato de forma unica no Maven. -->
+  <groupId>br.com.custocerto</groupId>
+  <artifactId>custo-certo-desktop</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>Custo Certo - Desktop</name>
+  <description>
+    Interface grafica JavaFX do Custo Certo. Projeto Integrador - FATEC Indaiatuba.
+    Acessa o banco MySQL pela rede local via JDBC, em arquitetura de camadas
+    (view -> service -> dao -> model).
+  </description>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+    <!-- Java 21: LTS. Roda em qualquer JDK 21 ou superior das maquinas do grupo. -->
+    <maven.compiler.release>21</maven.compiler.release>
+
+    <javafx.version>21.0.12</javafx.version>
+    <mysql.version>9.7.0</mysql.version>
+
+    <!-- Classe com o metodo main, usada por 'mvn javafx:run'. -->
+    <main.class>br.com.custocerto.App</main.class>
+  </properties>
+
+  <dependencies>
+    <!-- JavaFX: controles visuais (Button, TextField, Label...). -->
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-controls</artifactId>
+      <version>${javafx.version}</version>
+    </dependency>
+
+    <!-- JavaFX: carregamento de telas descritas em FXML. -->
+    <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-fxml</artifactId>
+      <version>${javafx.version}</version>
+    </dependency>
+
+    <!-- Driver JDBC oficial do MySQL: implementa java.sql para o MySQL. -->
+    <dependency>
+      <groupId>com.mysql</groupId>
+      <artifactId>mysql-connector-j</artifactId>
+      <version>${mysql.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Compilacao das classes Java. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+
+      <!-- Executa a aplicacao JavaFX montando o module-path sozinho: 'mvn javafx:run'. -->
+      <plugin>
+        <groupId>org.openjfx</groupId>
+        <artifactId>javafx-maven-plugin</artifactId>
+        <version>0.0.8</version>
+        <configuration>
+          <mainClass>${main.class}</mainClass>
+        </configuration>
+      </plugin>
+
+      <!-- Executa classes utilitarias pela linha de comando, como o GeradorDeSenhas. -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.5.0</version>
+      </plugin>
+
+      <!-- Gera a documentacao Javadoc exigida pela materia de POO: 'mvn javadoc:javadoc'.
+           Saida em target/reports/apidocs (Maven 3.9+) ou target/site/apidocs. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.12.0</version>
+        <configuration>
+          <encoding>UTF-8</encoding>
+          <docencoding>UTF-8</docencoding>
+          <charset>UTF-8</charset>
+          <doclint>none</doclint>
+          <windowtitle>Custo Certo - Desktop</windowtitle>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

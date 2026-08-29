@@ -1,0 +1,288 @@
+### ==============================================================
+###  Custo Certo — REST Client (VS Code)
+###  Instale a extensão "REST Client" (humao.rest-client)
+###  Troque @host por http://localhost:3000 para dev local
+###  ou https://custo-certo.onrender.com para produção
+### ==============================================================
+
+@host = http://localhost:3000
+
+# ================================================================
+#  SISTEMA
+# ================================================================
+
+### Health check
+GET {{host}}/health
+
+
+# ================================================================
+#  INGREDIENTES
+# ================================================================
+
+### 1. Listar todos os ingredientes
+GET {{host}}/ingredientes
+
+
+### 2. Buscar ingrediente por ID
+GET {{host}}/ingredientes/1
+
+
+### 3. Histórico de preços / movimentações
+GET {{host}}/ingredientes/historico
+
+
+### 4. Cadastrar ingrediente (por peso - kg)
+POST {{host}}/ingredientes
+Content-Type: application/json
+
+{
+  "nome": "Café em grãos",
+  "unidade": "kg",
+  "preco": 42.90,
+  "qtd": 5.0,
+  "qtdMax": 10.0,
+  "validade": "2026-12-31"
+}
+
+
+### 5. Cadastrar ingrediente (por unidade - un)
+POST {{host}}/ingredientes
+Content-Type: application/json
+
+{
+  "nome": "Ovos",
+  "unidade": "un",
+  "preco": 0.85,
+  "qtd": 30,
+  "qtdMax": 60
+}
+
+
+### 6. Cadastrar ingrediente (líquido - L)
+POST {{host}}/ingredientes
+Content-Type: application/json
+
+{
+  "nome": "Leite integral",
+  "unidade": "L",
+  "preco": 4.50,
+  "qtd": 10.0,
+  "qtdMax": 20.0,
+  "validade": "2026-07-15"
+}
+
+
+### 7. Cadastrar ingrediente sem validade
+POST {{host}}/ingredientes
+Content-Type: application/json
+
+{
+  "nome": "Açúcar refinado",
+  "unidade": "kg",
+  "preco": 3.20,
+  "qtd": 8.0,
+  "qtdMax": 15.0
+}
+
+
+### 8. Atualizar ingrediente - só nome
+PUT {{host}}/ingredientes/1
+Content-Type: application/json
+
+{
+  "nome": "Café em grãos especial"
+}
+
+
+### 9. Atualizar ingrediente - só preço
+PUT {{host}}/ingredientes/1
+Content-Type: application/json
+
+{
+  "preco": 48.50
+}
+
+
+### 10. Atualizar ingrediente - múltiplos campos (sem qtd!)
+PUT {{host}}/ingredientes/1
+Content-Type: application/json
+
+{
+  "nome": "Café em grãos",
+  "preco": 45.00,
+  "qtdMax": 12.0,
+  "validade": "2027-03-01"
+}
+
+
+### 11. Atualizar ingrediente - limpar validade
+PUT {{host}}/ingredientes/1
+Content-Type: application/json
+
+{
+  "validade": null
+}
+
+
+### 12. [ERRO ESPERADO] Tentar atualizar qtd diretamente - deve retornar 400
+PUT {{host}}/ingredientes/1
+Content-Type: application/json
+
+{
+  "qtd": 99
+}
+
+
+### 13. Registrar nova compra (entrada de estoque com novo lote)
+POST {{host}}/ingredientes/1/compras
+Content-Type: application/json
+
+{
+  "quantidade": 3.0,
+  "precoUnitario": 45.00,
+  "validade": "2027-01-15",
+  "observacao": "Compra fornecedor X"
+}
+
+
+### 14. Registrar compra sem validade
+POST {{host}}/ingredientes/1/compras
+Content-Type: application/json
+
+{
+  "quantidade": 2.0,
+  "precoUnitario": 43.00
+}
+
+
+### 15. Retirada manual de estoque (FIFO - abate do lote mais antigo)
+POST {{host}}/ingredientes/1/retirada
+Content-Type: application/json
+
+{
+  "quantidade": 0.5
+}
+
+
+### 16. Retirada de ingrediente por unidade
+POST {{host}}/ingredientes/2/retirada
+Content-Type: application/json
+
+{
+  "quantidade": 6
+}
+
+
+### 17. Deletar ingrediente
+DELETE {{host}}/ingredientes/1
+
+
+### 18. [ERRO ESPERADO] Buscar ingrediente inexistente - deve retornar 404
+GET {{host}}/ingredientes/9999
+
+
+### 19. [ERRO ESPERADO] Cadastrar sem campos obrigatórios - deve retornar 400
+POST {{host}}/ingredientes
+Content-Type: application/json
+
+{
+  "nome": "Teste incompleto"
+}
+
+
+### 20. [ERRO ESPERADO] Cadastrar com unidade inválida - deve retornar 400
+POST {{host}}/ingredientes
+Content-Type: application/json
+
+{
+  "nome": "Teste",
+  "unidade": "lb",
+  "preco": 5.00,
+  "qtd": 1.0
+}
+
+
+# ================================================================
+#  BALANÇA
+# ================================================================
+
+### 21. Enviar leitura de peso (simula o ESP32)
+POST {{host}}/balanca/peso
+Content-Type: application/json
+
+{
+  "peso": 0.250
+}
+
+
+### 22. Enviar peso zero (simula bandeja vazia)
+POST {{host}}/balanca/peso
+Content-Type: application/json
+
+{
+  "peso": 0.0
+}
+
+
+### 23. Consultar peso atual via REST (legado/polling)
+GET {{host}}/balanca/peso
+
+
+### 24. Solicitar tara (frontend → servidor → ESP32 consome no próximo GET /tara)
+POST {{host}}/balanca/tara
+Content-Type: application/json
+
+{}
+
+
+### 25. Verificar se há tara pendente (ESP32 consulta este endpoint)
+GET {{host}}/balanca/tara
+
+
+### 26. Confirmar pesagem — abate estoque via FIFO
+POST {{host}}/balanca/confirmar
+Content-Type: application/json
+
+{
+  "ingredienteId": 1,
+  "quantidadeConsumida": 0.250
+}
+
+
+### 27. Confirmar pesagem de ingrediente em gramas
+POST {{host}}/balanca/confirmar
+Content-Type: application/json
+
+{
+  "ingredienteId": 2,
+  "quantidadeConsumida": 150
+}
+
+
+### 28. [ERRO ESPERADO] Confirmar com ingredienteId inválido - deve retornar 400
+POST {{host}}/balanca/confirmar
+Content-Type: application/json
+
+{
+  "ingredienteId": 0,
+  "quantidadeConsumida": 0.5
+}
+
+
+### 29. [ERRO ESPERADO] Enviar peso fora do intervalo - deve retornar 400
+POST {{host}}/balanca/peso
+Content-Type: application/json
+
+{
+  "peso": 9999
+}
+
+
+### 30. SSE — stream de peso em tempo real
+# Nota: REST Client não suporta SSE nativamente.
+# Para testar, abra no navegador: http://localhost:3000/balanca/stream
+# Ou via curl:
+#   curl -N http://localhost:3000/balanca/stream
+GET {{host}}/balanca/stream
+Accept: text/event-stream
+

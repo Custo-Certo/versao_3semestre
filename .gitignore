@@ -1,0 +1,53 @@
+# =====================================================================
+# Custo Certo — arquivos que nunca vão para o repositório
+# =====================================================================
+
+# ---------- Segredos ----------
+# ATENÇÃO: no repositório anterior o secrets.ini escapou porque a regra
+# apontava para "firmware/secrets.ini" e o arquivo real estava em
+# "firmware/src/secrets.ini". A regra abaixo, sem caminho, pega o nome em
+# qualquer pasta do projeto. Não troque por um caminho específico.
+secrets.ini
+!secrets.ini.example
+
+.env
+.env.local
+.env.*.local
+
+# Configuração local do app desktop — contém a senha do MySQL de cada máquina
+config.properties
+!config.properties.example
+
+# ---------- Dependências e build ----------
+node_modules/
+dist/
+
+# Maven do app desktop
+desktop/target/
+target/
+
+# O Maven Wrapper baixa a distribuição aqui; ela não é versionada
+.mvn/wrapper/apache-maven-*/
+.mvn/wrapper/*.zip
+
+# ---------- Banco local ----------
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+data/
+
+# ---------- Firmware (PlatformIO) ----------
+firmware/.pio/
+firmware/.vscode/
+
+# ---------- Sistema e editores ----------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.log

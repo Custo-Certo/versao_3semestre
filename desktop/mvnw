@@ -1,0 +1,32 @@
+#!/bin/sh
+# ---------------------------------------------------------------------------
+#  Maven Wrapper - Custo Certo Desktop
+#
+#  Baixa o Apache Maven na versao definida em .mvn/wrapper/maven-wrapper.properties
+#  e executa o comando pedido. Uso: ./mvnw <objetivo>   (ex: ./mvnw javafx:run)
+# ---------------------------------------------------------------------------
+set -e
+
+BASE_DIR=$(cd "$(dirname "$0")" && pwd)
+WRAPPER_DIR="$BASE_DIR/.mvn/wrapper"
+PROPS="$WRAPPER_DIR/maven-wrapper.properties"
+
+if [ ! -f "$PROPS" ]; then
+    echo "[mvnw] Arquivo nao encontrado: $PROPS" >&2
+    exit 1
+fi
+
+MAVEN_VERSION=$(sed -n 's/^mavenVersion=//p' "$PROPS" | tr -d '\r')
+DIST_URL=$(sed -n 's/^distributionUrl=//p' "$PROPS" | tr -d '\r')
+MAVEN_HOME="$WRAPPER_DIR/apache-maven-$MAVEN_VERSION"
+
+if [ ! -x "$MAVEN_HOME/bin/mvn" ]; then
+    echo "[mvnw] Apache Maven $MAVEN_VERSION nao encontrado. Baixando uma unica vez..."
+    curl -fsSL -o "$WRAPPER_DIR/maven.zip" "$DIST_URL"
+    unzip -q -o "$WRAPPER_DIR/maven.zip" -d "$WRAPPER_DIR"
+    rm -f "$WRAPPER_DIR/maven.zip"
+    chmod +x "$MAVEN_HOME/bin/mvn"
+    echo "[mvnw] Maven $MAVEN_VERSION instalado em $MAVEN_HOME"
+fi
+
+exec "$MAVEN_HOME/bin/mvn" "$@"

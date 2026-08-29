@@ -1,0 +1,866 @@
+/*
+ * Custo Certo - Desktop
+ * Folha de estilos JavaFX das telas de login e principal.
+ *
+ * A paleta repete a do painel web em public/index.html, para que a versao
+ * desktop e a versao web sejam reconhecidas como o mesmo sistema.
+ *
+ * Observacao: o CSS do JavaFX nao e o mesmo do navegador. As propriedades sao
+ * prefixadas com -fx- e as cores reaproveitadas sao declaradas em .root como
+ * "looked-up colors" (nomes iniciados por traco), que e o equivalente das
+ * variaveis CSS da web.
+ */
+
+.root {
+    -cor-fundo:      #f5f6fa;
+    -cor-superficie: #ffffff;
+    -cor-borda:      #e8eaf0;
+    -cor-verde:      #00a86b;
+    -cor-verde-escuro: #008f5b;
+    -cor-vermelho:   #e63946;
+    -cor-azul:       #3a86ff;
+    -cor-texto:      #1a1d2e;
+    -cor-apagada:    #8892a4;
+
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    -fx-font-size: 13px;
+}
+
+/* ---------------------------------------------------------------- Fundos */
+
+.fundo {
+    -fx-background-color: -cor-fundo;
+}
+
+.fundo-app {
+    -fx-background-color: -cor-fundo;
+}
+
+/* ------------------------------------------------- Cartao da tela de login */
+
+.cartao {
+    -fx-background-color: -cor-superficie;
+    -fx-background-radius: 10;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 10;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.08), 18, 0, 0, 4);
+}
+
+.titulo-marca {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.subtitulo-marca {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.separador {
+    -fx-background-color: -cor-borda;
+}
+
+/* ---------------------------------------------------------------- Campos */
+
+.rotulo-campo {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.campo {
+    -fx-background-color: -cor-superficie;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 10 12 10 12;
+    -fx-font-size: 13px;
+    -fx-text-fill: -cor-texto;
+    -fx-prompt-text-fill: -cor-apagada;
+}
+
+.campo:focused {
+    -fx-border-color: -cor-verde;
+    -fx-border-width: 1.5;
+}
+
+.mostrar-senha {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.mostrar-senha .box {
+    -fx-background-radius: 3;
+    -fx-border-radius: 3;
+    -fx-border-color: -cor-borda;
+}
+
+.mostrar-senha:selected .mark {
+    -fx-background-color: -cor-verde;
+}
+
+.link-secundario {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-azul;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.link-secundario:hover {
+    -fx-underline: true;
+}
+
+/* ---------------------------------------------------------------- Botoes */
+
+.botao-principal {
+    -fx-background-color: -cor-verde;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 20 12 20;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.botao-principal:hover {
+    -fx-background-color: -cor-verde-escuro;
+}
+
+.botao-principal:disabled {
+    -fx-opacity: 0.6;
+}
+
+.botao-secundario {
+    -fx-background-color: transparent;
+    -fx-text-fill: -cor-texto;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-padding: 7 16 7 16;
+    -fx-cursor: hand;
+}
+
+.botao-secundario:hover {
+    -fx-background-color: -cor-fundo;
+    -fx-border-color: -cor-apagada;
+}
+
+/* -------------------------------------------------------------- Mensagens */
+
+.mensagem-erro {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-vermelho;
+    -fx-background-color: rgba(230, 57, 70, 0.08);
+    -fx-background-radius: 6;
+    -fx-padding: 9 12 9 12;
+}
+
+.mensagem-info {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-azul;
+    -fx-background-color: rgba(58, 134, 255, 0.08);
+    -fx-background-radius: 6;
+    -fx-padding: 9 12 9 12;
+}
+
+.rodape {
+    -fx-font-size: 11px;
+    -fx-text-fill: -cor-apagada;
+}
+
+/* -------------------------------------------------------- Tela principal */
+
+.barra-superior {
+    -fx-background-color: -cor-superficie;
+    -fx-border-color: transparent transparent -cor-borda transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.marca-barra {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.usuario-nome {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.etiqueta-perfil {
+    -fx-font-size: 11px;
+    -fx-text-fill: -cor-verde;
+    -fx-font-weight: bold;
+}
+
+.titulo-secao {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.texto-apoio {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.modulo {
+    -fx-background-color: -cor-superficie;
+    -fx-background-radius: 8;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.modulo-bloqueado {
+    -fx-background-color: transparent;
+    -fx-background-radius: 8;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+    -fx-border-style: dashed;
+    -fx-opacity: 0.55;
+}
+
+.modulo-titulo {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.modulo-texto {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-apagada;
+}
+
+/* ==================================================================
+ * Painel do sistema - reproduz a identidade visual do painel web
+ * (public/index.html). As cores sao as mesmas variaveis do front:
+ * bg #f5f6fa, surface #fff, border #e8eaf0, green #00a86b,
+ * red #e63946, orange #f4a435, blue #3a86ff, text #1a1d2e,
+ * muted #8892a4.
+ * ================================================================== */
+
+/* ------------------------------------------------- barra lateral */
+
+.barra-lateral {
+    -fx-background-color: -cor-superficie;
+    -fx-border-color: transparent -cor-borda transparent transparent;
+    -fx-border-width: 0 1 0 0;
+}
+
+.marca-caixa {
+    -fx-border-color: transparent transparent -cor-borda transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.marca-lateral {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.marca-lateral-sub {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.menu-secao {
+    -fx-font-size: 10px;
+    -fx-text-fill: -cor-apagada;
+    -fx-font-weight: bold;
+}
+
+.item-menu {
+    -fx-background-color: transparent;
+    -fx-text-fill: -cor-apagada;
+    -fx-font-size: 13px;
+    -fx-padding: 9 12 9 12;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+}
+
+.item-menu:hover {
+    -fx-background-color: -cor-fundo;
+    -fx-text-fill: -cor-texto;
+}
+
+.item-menu-ativo {
+    -fx-background-color: rgba(0, 168, 107, 0.12);
+    -fx-text-fill: -cor-verde;
+    -fx-font-weight: bold;
+}
+
+.rodape-lateral {
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -cor-apagada;
+}
+
+/* ------------------------------------------------ titulos de pagina */
+
+.pagina-titulo {
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.pagina-sub {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.rolagem {
+    -fx-background-color: transparent;
+}
+
+.rolagem > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* --------------------------------------------- cartoes de indicador */
+
+.kpi-cartao {
+    -fx-background-color: -cor-superficie;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-width: 1 1 1 3;
+}
+
+.kpi-verde    { -fx-border-color: -cor-borda -cor-borda -cor-borda -cor-verde; }
+.kpi-vermelho { -fx-border-color: -cor-borda -cor-borda -cor-borda -cor-vermelho; }
+.kpi-azul     { -fx-border-color: -cor-borda -cor-borda -cor-borda -cor-azul; }
+.kpi-laranja  { -fx-border-color: -cor-borda -cor-borda -cor-borda #f4a435; }
+
+.kpi-rotulo {
+    -fx-font-size: 10px;
+    -fx-text-fill: -cor-apagada;
+    -fx-font-weight: bold;
+}
+
+.kpi-valor {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.kpi-legenda {
+    -fx-font-size: 11px;
+    -fx-text-fill: -cor-apagada;
+}
+
+/* ------------------------------------------------- cartoes e paineis */
+
+.cartao-painel {
+    -fx-background-color: -cor-superficie;
+    -fx-background-radius: 8;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.cartao-titulo {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.mini-rotulo {
+    -fx-font-size: 11px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.mini-valor {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+/* ------------------------------------------------- cartao de insumo */
+
+.cartao-insumo {
+    -fx-background-color: -cor-superficie;
+    -fx-background-radius: 8;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 8;
+    -fx-border-width: 1;
+}
+
+.cartao-insumo-aviso {
+    -fx-border-color: #f4a435;
+}
+
+.cartao-insumo-vencido {
+    -fx-border-color: -cor-vermelho;
+}
+
+.insumo-nome {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-texto;
+}
+
+.insumo-preco {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-verde;
+    -fx-font-weight: bold;
+}
+
+.insumo-saldo {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.insumo-valor {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -cor-apagada;
+}
+
+.insumo-pct {
+    -fx-font-size: 11px;
+    -fx-text-fill: -cor-apagada;
+}
+
+/* -------------------------------------------------- barra de nivel */
+
+.barra-fundo {
+    -fx-background-color: #e8eaf0;
+    -fx-background-radius: 4;
+    -fx-min-height: 7;
+    -fx-pref-height: 7;
+    -fx-max-height: 7;
+}
+
+.barra-nivel {
+    -fx-background-radius: 4;
+    -fx-min-height: 7;
+    -fx-pref-height: 7;
+    -fx-max-height: 7;
+}
+
+.barra-ok {
+    -fx-background-color: -cor-verde;
+}
+
+.barra-media {
+    -fx-background-color: #f4a435;
+}
+
+.barra-baixa {
+    -fx-background-color: -cor-vermelho;
+}
+
+/* ----------------------------------------------------- etiquetas */
+
+.etiqueta {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 2 7 2 7;
+    -fx-background-radius: 10;
+}
+
+.etiqueta-ok {
+    -fx-background-color: rgba(0, 168, 107, 0.12);
+    -fx-text-fill: -cor-verde;
+}
+
+.etiqueta-aviso {
+    -fx-background-color: rgba(244, 164, 53, 0.15);
+    -fx-text-fill: #b97a10;
+}
+
+.etiqueta-vencido {
+    -fx-background-color: rgba(230, 57, 70, 0.12);
+    -fx-text-fill: -cor-vermelho;
+}
+
+/* ------------------------------------------------ faixa de alerta */
+
+.faixa-alerta {
+    -fx-background-color: rgba(244, 164, 53, 0.10);
+    -fx-border-color: #f4a435;
+    -fx-border-width: 0 0 0 3;
+    -fx-background-radius: 6;
+    -fx-padding: 12 16 12 16;
+}
+
+.faixa-alerta-titulo {
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #b97a10;
+}
+
+.faixa-alerta-item {
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -cor-texto;
+}
+
+/* --------------------------------------------------- botoes menores */
+
+.botao-mini {
+    -fx-background-color: transparent;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-text-fill: -cor-texto;
+    -fx-font-size: 11px;
+    -fx-padding: 5 10 5 10;
+    -fx-cursor: hand;
+}
+
+.botao-mini:hover {
+    -fx-background-color: -cor-fundo;
+    -fx-border-color: -cor-verde;
+    -fx-text-fill: -cor-verde;
+}
+
+.botao-mini-perigo:hover {
+    -fx-border-color: -cor-vermelho;
+    -fx-text-fill: -cor-vermelho;
+}
+
+/* ------------------------------------------------- visor da balanca */
+
+.visor {
+    -fx-background-color: linear-gradient(to bottom right, #1a1d2e, #2b3350);
+    -fx-background-radius: 10;
+}
+
+.visor-rotulo {
+    -fx-font-size: 11px;
+    -fx-text-fill: rgba(255, 255, 255, 0.55);
+}
+
+.visor-peso {
+    -fx-font-size: 46px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.visor-unidade {
+    -fx-font-size: 14px;
+    -fx-text-fill: rgba(255, 255, 255, 0.7);
+}
+
+/* ------------------------------------------------- tabela simples */
+
+.tabela-cabecalho {
+    -fx-border-color: transparent transparent -cor-borda transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tabela-cabecalho .label {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-apagada;
+}
+
+.tabela-linha {
+    -fx-border-color: transparent transparent -cor-borda transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.tabela-linha .label {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-texto;
+}
+
+/* ------------------------------------------------- tabela JavaFX */
+
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: -cor-fundo;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-apagada;
+}
+
+.table-view .table-cell {
+    -fx-font-size: 12px;
+    -fx-text-fill: -cor-texto;
+    -fx-border-color: transparent;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(0, 168, 107, 0.10);
+}
+
+/* ------------------------------------------------- graficos */
+
+.chart {
+    -fx-background-color: transparent;
+    -fx-padding: 4;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+    -fx-font-size: 10.5px;
+}
+
+.axis {
+    -fx-tick-label-fill: -cor-apagada;
+    -fx-tick-label-font-size: 10px;
+}
+
+.axis-label {
+    -fx-text-fill: -cor-apagada;
+    -fx-font-size: 10.5px;
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: #e8eaf0;
+}
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: #e8eaf0;
+}
+
+.default-color0.chart-pie { -fx-pie-color: #00a86b; }
+.default-color1.chart-pie { -fx-pie-color: #3a86ff; }
+.default-color2.chart-pie { -fx-pie-color: #f4a435; }
+.default-color3.chart-pie { -fx-pie-color: #e63946; }
+.default-color4.chart-pie { -fx-pie-color: #8892a4; }
+.default-color5.chart-pie { -fx-pie-color: #00c9a7; }
+.default-color6.chart-pie { -fx-pie-color: #7b61ff; }
+.default-color7.chart-pie { -fx-pie-color: #ff8fa3; }
+
+.chart-pie-label {
+    -fx-fill: -cor-apagada;
+    -fx-font-size: 10px;
+}
+
+.default-color0.chart-series-line { -fx-stroke: #00a86b; }
+.default-color1.chart-series-line { -fx-stroke: #3a86ff; }
+.default-color2.chart-series-line { -fx-stroke: #f4a435; }
+.default-color3.chart-series-line { -fx-stroke: #e63946; }
+.default-color4.chart-series-line { -fx-stroke: #7b61ff; }
+
+.default-color0.chart-line-symbol { -fx-background-color: #00a86b, white; }
+.default-color1.chart-line-symbol { -fx-background-color: #3a86ff, white; }
+.default-color2.chart-line-symbol { -fx-background-color: #f4a435, white; }
+.default-color3.chart-line-symbol { -fx-background-color: #e63946, white; }
+.default-color4.chart-line-symbol { -fx-background-color: #7b61ff, white; }
+
+/* ------------------------------------------------- avatar do usuario */
+
+.avatar {
+    -fx-background-color: rgba(0, 168, 107, 0.14);
+    -fx-background-radius: 19;
+    -fx-border-color: rgba(0, 168, 107, 0.30);
+    -fx-border-radius: 19;
+    -fx-border-width: 1;
+}
+
+.avatar-texto {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -cor-verde;
+}
+
+/* --------------------------------------- estado da conexao da balanca */
+
+.visor-status {
+    -fx-font-size: 11px;
+    -fx-text-fill: rgba(255, 255, 255, 0.72);
+}
+
+/* ==================================================================
+ * Refinamento visual - 29/08/2026
+ * Sombras suaves no lugar de bordas duras, cantos maiores, reacao ao
+ * passar o mouse e espaco para o conteudo respirar.
+ * ================================================================== */
+
+/* ------------------------------------------------ simbolo da marca */
+
+.marca-simbolo {
+    -fx-background-color: rgba(0, 168, 107, 0.12);
+    -fx-background-radius: 26;
+    -fx-border-color: rgba(0, 168, 107, 0.25);
+    -fx-border-radius: 26;
+    -fx-border-width: 1;
+}
+
+/* --------------------------------------- cartao de login mais leve */
+
+.cartao {
+    -fx-background-radius: 14;
+    -fx-border-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.10), 26, 0, 0, 6);
+}
+
+.titulo-marca {
+    -fx-font-size: 27px;
+}
+
+/* ------------------------------------------------- indicadores */
+
+.kpi-cartao {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.05), 12, 0, 0, 2);
+}
+
+.kpi-icone {
+    -fx-background-radius: 15;
+}
+
+.kpi-valor {
+    -fx-font-size: 25px;
+}
+
+/* -------------------------------------------------- cartoes gerais */
+
+.cartao-painel {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.05), 12, 0, 0, 2);
+}
+
+.cartao-legenda {
+    -fx-font-size: 11px;
+    -fx-text-fill: -cor-apagada;
+}
+
+/* ---------------------------------------- cartao de insumo com relevo */
+
+.cartao-insumo {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.05), 12, 0, 0, 2);
+}
+
+.cartao-insumo:hover {
+    -fx-border-color: -cor-verde;
+    -fx-effect: dropshadow(gaussian, rgba(0, 168, 107, 0.18), 18, 0, 0, 5);
+}
+
+.cartao-insumo-vencido:hover {
+    -fx-border-color: -cor-vermelho;
+    -fx-effect: dropshadow(gaussian, rgba(230, 57, 70, 0.18), 18, 0, 0, 5);
+}
+
+/* ---------------------------------------------- barra lateral e menu */
+
+.barra-lateral {
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.04), 10, 0, 2, 0);
+}
+
+.item-menu {
+    -fx-padding: 10 12 10 12;
+    -fx-background-radius: 8;
+}
+
+.item-menu-ativo {
+    -fx-background-radius: 8;
+}
+
+/* --------------------------------------------------------- botoes */
+
+.botao-principal {
+    -fx-background-radius: 8;
+    -fx-effect: dropshadow(gaussian, rgba(0, 168, 107, 0.25), 10, 0, 0, 3);
+}
+
+.botao-principal:hover {
+    -fx-effect: dropshadow(gaussian, rgba(0, 168, 107, 0.35), 14, 0, 0, 4);
+}
+
+.botao-secundario {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.botao-mini {
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-padding: 6 10 6 10;
+}
+
+/* ------------------------------------------------- visor da balanca */
+
+.visor {
+    -fx-background-radius: 14;
+    -fx-effect: dropshadow(gaussian, rgba(26, 29, 46, 0.22), 20, 0, 0, 6);
+}
+
+.visor-peso {
+    -fx-font-size: 50px;
+}
+
+/* ------------------------------------------------- faixa de alerta */
+
+.faixa-alerta {
+    -fx-background-radius: 10;
+}
+
+/* ------------------------------------------------- campos e caixas */
+
+.campo {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+}
+
+.combo-box, .choice-box, .date-picker {
+    -fx-background-color: -cor-superficie;
+    -fx-border-color: -cor-borda;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-font-size: 13px;
+}
+
+.combo-box:focused, .choice-box:focused, .date-picker:focused {
+    -fx-border-color: -cor-verde;
+}
+
+.combo-box .list-cell, .choice-box .label {
+    -fx-text-fill: -cor-texto;
+    -fx-padding: 4 6 4 6;
+}
+
+/* ------------------------------------------------- tabela JavaFX */
+
+.table-view {
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.table-view .column-header-background {
+    -fx-background-radius: 10 10 0 0;
+}
+
+/* -------------------------------------------------- barra de rolagem */
+
+.scroll-bar:vertical .thumb, .scroll-bar:horizontal .thumb {
+    -fx-background-color: #d4d9e4;
+    -fx-background-radius: 6;
+}
+
+.scroll-bar:vertical .track, .scroll-bar:horizontal .track {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-shape: "";
+    -fx-padding: 0;
+}

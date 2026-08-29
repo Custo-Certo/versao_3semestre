@@ -111,6 +111,35 @@ minutos. Das próximas vezes abre direto.
 
 ---
 
+## Abrindo no Eclipse
+
+**File → Import → Maven → Existing Maven Projects**, apontando para a pasta
+`desktop` — não para a raiz do repositório, que é o projeto Node. O Eclipse lê o
+`pom.xml` e resolve JavaFX e o driver MySQL sozinho.
+
+Dois cuidados:
+
+**O Eclipse precisa rodar sobre JDK 21 ou superior.** Confira em
+*Window → Preferences → Java → Installed JREs*. Com um JDK anterior o projeto
+não compila.
+
+**Para executar, use a classe `Launcher`**, não a `App`:
+
+*Botão direito em `Launcher.java` → Run As → Java Application*
+
+A `App` estende `Application`, e a JVM recusa iniciar uma classe assim quando o
+JavaFX está no classpath em vez do module path — o erro é
+*"JavaFX runtime components are missing"*. A `Launcher` não estende nada, então
+a verificação não se aplica e o JavaFX sobe normalmente. É por isso que ela
+existe.
+
+Pela linha de comando o `mvnw javafx:run` continua valendo e pode apontar direto
+para a `App`, porque o plugin do JavaFX monta o module path por conta própria.
+
+O mesmo vale para IntelliJ e NetBeans.
+
+---
+
 ## Contas cadastradas pelo script
 
 | E-mail | Senha | Perfil | Situação |

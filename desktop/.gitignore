@@ -1,0 +1,17 @@
+# Build do Maven
+target/
+
+# Maven Wrapper: a distribuicao baixada nao vai para o repositorio
+.mvn/wrapper/apache-maven-*/
+.mvn/wrapper/*.zip
+
+# Configuracao local de cada integrante (contem a senha do MySQL)
+config.properties
+
+# Arquivos de IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/

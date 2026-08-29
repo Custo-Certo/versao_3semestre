@@ -1,0 +1,27 @@
+/*
+ * Custo Certo — style.css
+ *
+ * Os estilos principais da SPA estão dentro da tag <style> do index.html
+ * (deixados ali para manter o layout coeso em um único arquivo na entrega).
+ *
+ * Este arquivo existe para overrides futuros e para ser referenciado
+ * pelo HTML caso a equipe decida extrair os estilos depois.
+ */
+
+/* Esconde o scrollbar horizontal indesejado em algumas resoluções */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Garante que o scroll vertical do conteúdo principal seja suave */
+main, .content, .page {
+  scroll-behavior: smooth;
+}
+
+/* Acessibilidade: melhora foco em botões/inputs */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}

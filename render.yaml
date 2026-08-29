@@ -1,0 +1,42 @@
+# =====================================================
+# Custo Certo - Configuração do Render
+# =====================================================
+# Este arquivo permite "Infrastructure as Code" no Render.
+# Ao criar um novo Web Service apontando para este repo,
+# o Render lê este arquivo e configura tudo automaticamente.
+## Documentação: https://render.com/docs/blueprint-spec
+
+
+services:
+  - type: web
+    name: custo-certo
+    runtime: node
+    plan: free
+    region: oregon          # mais próximo do Brasil entre as regiões free
+    branch: main
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: AUTO_SEED
+        value: "true"
+
+      # ⚠️  DB_URL e DB_AUTH_TOKEN devem ser configurados manualmente no
+      # painel do Render por segurança (não comitar tokens no repo).
+      #
+      # No painel: Settings → Environment → Add Environment Variable
+      #   DB_URL          = libsql://seu-banco.turso.io
+      #   DB_AUTH_TOKEN   = (cole o token gerado pelo Turso CLI)
+      - key: DB_URL
+        sync: false           # marca como "secret" — preencher no painel
+
+      - key: DB_AUTH_TOKEN
+        sync: false
+
+      - key: ALLOWED_ORIGINS
+        sync: false           # opcional: lista de domínios autorizados

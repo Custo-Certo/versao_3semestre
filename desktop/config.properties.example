@@ -1,0 +1,23 @@
+# =====================================================================
+# Custo Certo - Desktop | Exemplo de configuracao local
+# =====================================================================
+# Copie este arquivo para "config.properties" NESTA PASTA (desktop/) e
+# preencha com os dados do MySQL que voce esta usando.
+#
+#   cp config.properties.example config.properties      (Git Bash)
+#   copy config.properties.example config.properties    (Prompt / PowerShell)
+#
+# O arquivo config.properties esta no .gitignore e nao vai para o repositorio.
+
+# Maquina onde o MySQL esta rodando.
+# Durante o desenvolvimento, cada um usa localhost.
+# Na demonstracao de acesso via rede local, todos apontam para o IP da
+# maquina que estiver servindo o banco (descubra com "ipconfig" nela).
+db.host=localhost
+db.porta=3306
+db.nome=custo_certo
+
+db.usuario=root
+db.senha=SUA_SENHA_DO_MYSQL
+
+db.parametros=useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo&characterEncoding=UTF-8&connectTimeout=3000&socketTimeout=15000

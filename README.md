@@ -6,6 +6,8 @@
 
 *Plataforma full-stack que integra uma balança inteligente (ESP32 + HX711) a um sistema de controle de insumos, movimentações e custo de mercadoria vendida (CMV) em tempo real.*
 
+**[Como abrir o projeto no Eclipse](docs/como-abrir-no-eclipse.md)** · **[Documentação do semestre](docs/)**
+
 <br/>
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)

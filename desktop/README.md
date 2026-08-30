@@ -267,7 +267,15 @@ métodos públicos e parâmetros estão documentados.
 
 ## O que ainda falta
 
-- Tela de gestão de usuários (cadastro, edição e inativação pelo administrador).
-- Ligar os módulos de insumos, movimentações, balança e indicadores.
-- Migrar as tabelas de insumos e movimentações do SQLite para o MySQL (D6, D8).
-- Incluir `usuarios` e `log_acesso` no DER (D5).
+> Aviso: o restante deste README ainda descreve a entrega anterior, quando o app
+> cobria apenas a autenticação. As telas de Dashboard, Balança, Estoque, Evolução
+> de Preços e Usuários já existem, e as tabelas de insumos e movimentações já
+> estão em MySQL. A descrição atualizada do sistema está em
+> [docs/arquitetura.md](../docs/arquitetura.md) e
+> [docs/modelo-de-dados.md](../docs/modelo-de-dados.md).
+
+Pendências reais, hoje:
+
+- Regravar o firmware no ESP32 — ele e o `balancaController` têm de subir juntos.
+- Abrir a porta 3306 no Firewall do Windows, para a demonstração de acesso via rede.
+- Decisões D2, D3, D4 e D5, ainda em aberto no grupo.

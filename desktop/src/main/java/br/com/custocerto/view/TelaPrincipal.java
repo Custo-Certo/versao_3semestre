@@ -2,7 +2,10 @@ package br.com.custocerto.view;
 
 import br.com.custocerto.model.Usuario;
 import br.com.custocerto.service.EstoqueService;
+import br.com.custocerto.service.AnaliseService;
+import br.com.custocerto.service.FichaTecnicaService;
 import br.com.custocerto.service.UsuarioService;
+import br.com.custocerto.service.VendaService;
 import br.com.custocerto.util.ConfiguracaoBanco;
 import br.com.custocerto.util.Sessao;
 import java.util.ArrayList;
@@ -24,9 +27,9 @@ import javafx.stage.Stage;
 /**
  * Janela principal do sistema, com a mesma navegação do painel web.
  *
- * <p>Uma barra lateral fixa à esquerda lista as páginas — Dashboard, Balança,
- * Estoque, Evolução de Preços e Usuários — e a área da direita troca de conteúdo
- * conforme a escolha, sem abrir novas janelas.</p>
+ * <p>Uma barra lateral fixa à esquerda agrupa as páginas em quatro seções —
+ * operação, cardápio, análises e administração — e a área da direita troca de
+ * conteúdo conforme a escolha, sem abrir novas janelas.</p>
  *
  * <p>O menu não é fixo: cada item só aparece se o perfil do usuário autenticado
  * permitir. Um operador não vê Dashboard nem Evolução de Preços, porque essas
@@ -43,6 +46,9 @@ public class TelaPrincipal {
     private final Usuario usuario;
     private final EstoqueService servico = new EstoqueService();
     private final UsuarioService servicoUsuarios = new UsuarioService();
+    private final FichaTecnicaService servicoCardapio = new FichaTecnicaService();
+    private final VendaService servicoVendas = new VendaService();
+    private final AnaliseService servicoAnalise = new AnaliseService();
 
     /** Cor dos ícones e rótulos inativos do menu. */
     private static final javafx.scene.paint.Color COR_APAGADA =
@@ -61,6 +67,9 @@ public class TelaPrincipal {
     private PaginaBalanca balanca;
     private PaginaEstoque estoque;
     private PaginaEvolucao evolucao;
+    private PaginaFichaTecnica fichaTecnica;
+    private PaginaVendas vendas;
+    private PaginaMargem margem;
     private PaginaUsuarios usuarios;
 
     /**
@@ -108,7 +117,7 @@ public class TelaPrincipal {
         menu.getChildren().add(rotuloSecao("Principal"));
 
         if (indicadores) {
-            dashboard = new PaginaDashboard(servico);
+            dashboard = new PaginaDashboard(servico, servicoAnalise);
             adicionarItem("Dashboard", "painel", dashboard);
         }
         if (operacao) {
@@ -118,8 +127,26 @@ public class TelaPrincipal {
             estoque = new PaginaEstoque(servico, this::atualizarTudo);
             adicionarItem("Estoque", "estoque", estoque);
         }
+
+        if (operacao) {
+            menu.getChildren().add(rotuloSecao("Cardápio"));
+
+            vendas = new PaginaVendas(servicoVendas, servicoCardapio, this::atualizarTudo);
+            adicionarItem("Vendas", "vendas", vendas);
+
+            if (indicadores) {
+                fichaTecnica = new PaginaFichaTecnica(
+                        servicoCardapio, servico, this::atualizarTudo);
+                adicionarItem("Ficha Técnica", "ficha", fichaTecnica);
+            }
+        }
+
         if (indicadores) {
             menu.getChildren().add(rotuloSecao("Análises"));
+
+            margem = new PaginaMargem(servicoAnalise);
+            adicionarItem("Margem e Desperdício", "margem", margem);
+
             evolucao = new PaginaEvolucao(servico);
             adicionarItem("Evolução de Preços", "evolucao", evolucao);
         }
@@ -297,6 +324,15 @@ public class TelaPrincipal {
         }
         if (usuarios != null) {
             usuarios.atualizar();
+        }
+        if (fichaTecnica != null) {
+            fichaTecnica.atualizar();
+        }
+        if (vendas != null) {
+            vendas.atualizar();
+        }
+        if (margem != null) {
+            margem.atualizar();
         }
     }
 

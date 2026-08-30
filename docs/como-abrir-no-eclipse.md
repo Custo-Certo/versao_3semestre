@@ -53,7 +53,7 @@ um arquivo `.project`, que projetos Maven não têm, e a lista vem vazia.
 ## 6. Apontar para a pasta `desktop`, não para a raiz
 
 Em *Root Directory*, informe `C:\dev\custo-certo\desktop`. A raiz do repositório
-é o projeto Node e não tem `pom.xml`.
+só tem documentação e não tem `pom.xml`.
 
 A janela deve mostrar:
 

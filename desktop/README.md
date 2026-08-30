@@ -13,7 +13,7 @@ descrita no item 4 da definição de escopo do sistema.
 
 | Decisão | Escolha | Por quê |
 |---|---|---|
-| Acesso a dados (D1) | JDBC direto no MySQL | O requisito da POO pede que o sistema Java manipule o banco e acesse pela rede local. O backend Node/Express continua no ar para a balança e o painel web. |
+| Acesso a dados (D1) | JDBC direto no MySQL | O requisito da POO pede que o sistema Java manipule o banco e acesse pela rede local. O painel web, que vive em outro repositório, faz o mesmo por conta própria. |
 | Interface (D7) | JavaFX | Sucessor do Swing, com estilização por CSS — o que permite repetir a paleta do painel web. Entra como dependência do Maven, sem SDK para instalar. |
 | Build | Maven, via wrapper | Resolve o driver JDBC e o JavaFX sozinho e gera o Javadoc em um comando. O wrapper dispensa instalar o Maven em cada máquina. |
 
@@ -114,7 +114,7 @@ minutos. Das próximas vezes abre direto.
 ## Abrindo no Eclipse
 
 **File → Import → Maven → Existing Maven Projects**, apontando para a pasta
-`desktop` — não para a raiz do repositório, que é o projeto Node. O Eclipse lê o
+`desktop` — não para a raiz do repositório, que só tem documentação. O Eclipse lê o
 `pom.xml` e resolve JavaFX e o driver MySQL sozinho.
 
 Dois cuidados:

@@ -2,6 +2,7 @@ package br.com.custocerto.view;
 
 import br.com.custocerto.model.Usuario;
 import br.com.custocerto.service.EstoqueService;
+import br.com.custocerto.service.UsuarioService;
 import br.com.custocerto.util.ConfiguracaoBanco;
 import br.com.custocerto.util.Sessao;
 import java.util.ArrayList;
@@ -24,12 +25,12 @@ import javafx.stage.Stage;
  * Janela principal do sistema, com a mesma navegação do painel web.
  *
  * <p>Uma barra lateral fixa à esquerda lista as páginas — Dashboard, Balança,
- * Estoque e Evolução de Preços — e a área da direita troca de conteúdo conforme
- * a escolha, sem abrir novas janelas.</p>
+ * Estoque, Evolução de Preços e Usuários — e a área da direita troca de conteúdo
+ * conforme a escolha, sem abrir novas janelas.</p>
  *
  * <p>O menu não é fixo: cada item só aparece se o perfil do usuário autenticado
  * permitir. Um operador não vê Dashboard nem Evolução de Preços, porque essas
- * páginas exigem a permissão de indicadores. Como a decisão vem do próprio
+ * páginas exigem a permissão de indicadores, e só o administrador vê Usuários. Como a decisão vem do próprio
  * {@link br.com.custocerto.model.Perfil}, incluir um perfil novo no futuro não
  * exige mexer nesta classe.</p>
  *
@@ -41,6 +42,7 @@ public class TelaPrincipal {
     private final Stage palco;
     private final Usuario usuario;
     private final EstoqueService servico = new EstoqueService();
+    private final UsuarioService servicoUsuarios = new UsuarioService();
 
     /** Cor dos ícones e rótulos inativos do menu. */
     private static final javafx.scene.paint.Color COR_APAGADA =
@@ -59,6 +61,7 @@ public class TelaPrincipal {
     private PaginaBalanca balanca;
     private PaginaEstoque estoque;
     private PaginaEvolucao evolucao;
+    private PaginaUsuarios usuarios;
 
     /**
      * Cria a janela principal para o usuário autenticado.
@@ -119,6 +122,12 @@ public class TelaPrincipal {
             menu.getChildren().add(rotuloSecao("Análises"));
             evolucao = new PaginaEvolucao(servico);
             adicionarItem("Evolução de Preços", "evolucao", evolucao);
+        }
+
+        if (usuario.getPerfil().podeGerenciarUsuarios()) {
+            menu.getChildren().add(rotuloSecao("Administração"));
+            usuarios = new PaginaUsuarios(servicoUsuarios);
+            adicionarItem("Usuários", "usuarios", usuarios);
         }
 
         if (!botoesMenu.isEmpty()) {
@@ -285,6 +294,9 @@ public class TelaPrincipal {
         }
         if (evolucao != null) {
             evolucao.atualizar();
+        }
+        if (usuarios != null) {
+            usuarios.atualizar();
         }
     }
 

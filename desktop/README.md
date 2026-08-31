@@ -1,11 +1,33 @@
 # Custo Certo — Desktop (JavaFX)
 
-Interface gráfica em Java do Custo Certo, para o 2º semestre de 2026.
+Interface gráfica em Java do Custo Certo, para o **3º semestre de 2026**.
 Atende aos requisitos das matérias de **Programação Orientada a Objetos**
 (Prof. Sérgio Furgeri) e **Banco de Dados** (Prof. Marlon).
 
-Esta entrega cobre a **autenticação e os perfis de acesso** — a macro função
-descrita no item 4 da definição de escopo do sistema.
+Este é o projeto principal do semestre. O painel web e o firmware da balança
+vivem em [`Project_Custo_Certo`](https://github.com/Custo-Certo/Project_Custo_Certo),
+e os dois projetos **não dependem um do outro para rodar** — compartilham apenas
+o banco MySQL e a balança.
+
+---
+
+## O que o sistema faz
+
+| Módulo | O que entrega |
+|---|---|
+| **Login e perfis** | senha protegida por PBKDF2, auditoria de tentativas, menu montado pelas permissões |
+| **Usuários** | cadastro, edição, redefinição de senha e inativação — só para o administrador |
+| **Estoque** | insumos, compras, retiradas, alertas de nível e de validade |
+| **Balança** | leitura de peso em tempo real e baixa automática no estoque |
+| **Ficha Técnica** | o que a cafeteria vende e quanto cada produto custa |
+| **Vendas** | registro do faturamento, sem o qual não existe margem |
+| **Margem e Desperdício** | engenharia de cardápio e consumo teórico × real |
+| **Evolução de Preços** | variação do custo de aquisição ao longo do tempo |
+
+O indicador central — o **CMV** — é calculado sobre vendas reais e fichas
+técnicas. Até o semestre passado ele era exibido como 28,6% fixos, porque a
+receita era estimada multiplicando o próprio custo por 3,5: os dois lados da
+divisão eram a mesma grandeza e o resultado nunca mudava.
 
 ---
 
@@ -13,9 +35,12 @@ descrita no item 4 da definição de escopo do sistema.
 
 | Decisão | Escolha | Por quê |
 |---|---|---|
-| Acesso a dados (D1) | JDBC direto no MySQL | O requisito da POO pede que o sistema Java manipule o banco e acesse pela rede local. O painel web, que vive em outro repositório, faz o mesmo por conta própria. |
-| Interface (D7) | JavaFX | Sucessor do Swing, com estilização por CSS — o que permite repetir a paleta do painel web. Entra como dependência do Maven, sem SDK para instalar. |
-| Build | Maven, via wrapper | Resolve o driver JDBC e o JavaFX sozinho e gera o Javadoc em um comando. O wrapper dispensa instalar o Maven em cada máquina. |
+| Acesso a dados (D1) | JDBC direto no MySQL | O requisito da POO pede que o sistema Java manipule o banco e acesse pela rede local. |
+| Interface (D7) | JavaFX | Sucessor do Swing, com estilização por CSS. Entra como dependência do Maven, sem SDK para instalar. |
+| Build | Maven, via wrapper | Resolve o driver JDBC e o JavaFX sozinho e gera o Javadoc em um comando. |
+| Balança | Dispositivo de rede | O ESP32 serve `GET /peso` e `POST /tara`; este app consulta direto, sem depender do servidor Node. |
+
+Detalhes em [`docs/arquitetura.md`](../docs/arquitetura.md).
 
 ---
 
@@ -39,17 +64,14 @@ precisar de privilégio de administrador. Ele não roda como serviço do Windows
 | Parar o banco | `C:/Users/gabic/MySQL/parar-mysql.bat` |
 | Abrir o console SQL | `C:/Users/gabic/MySQL/console-mysql.bat` |
 
-O banco `custo_certo` já está criado e carregado. Contas do MySQL:
+Contas do MySQL:
 
-- `root` — sem senha, só de `localhost`, para administrar
+- `root` — sem senha, só de `localhost`, para rodar os scripts
 - `custocerto` / `custocerto2026` — de qualquer host, com permissão apenas no
   banco `custo_certo`. É a conta que a aplicação usa e a que funciona pela rede.
 
 > **Antes de qualquer coisa, ligue o banco.** Se o `iniciar-mysql.bat` não
 > estiver rodando, a aplicação abre mas o login não funciona.
-
-**Nas outras máquinas do grupo:** instale o MySQL Community Server normalmente e
-rode o script da seção seguinte. Não é preciso repetir a instalação portátil.
 
 ---
 
@@ -57,20 +79,21 @@ rode o script da seção seguinte. Não é preciso repetir a instalação portá
 
 ### 1. Ligar o banco
 
-Dê duplo clique em `iniciar-mysql.bat` e **deixe a janela aberta**.
+Duplo clique em `iniciar-mysql.bat` e **deixe a janela aberta**.
 
 ### 2. Criar o banco (só na primeira vez, ou em outra máquina)
 
-Com o MySQL rodando:
+Os três scripts precisam rodar **nesta ordem** — o segundo referencia o primeiro,
+e o terceiro referencia o segundo:
 
 ```bash
 mysql -u root -p < src/main/resources/sql/01_schema_usuarios.sql
+mysql -u root -p < src/main/resources/sql/02_schema_insumos.sql
+mysql -u root -p < src/main/resources/sql/03_schema_receitas_vendas.sql
 ```
 
-Ou abra o arquivo no MySQL Workbench e execute o script inteiro.
-Ele cria o banco `custo_certo`, as tabelas `usuarios` e `log_acesso`, e carrega
-as contas iniciais. Pode ser executado mais de uma vez sem duplicar nada —
-isso foi testado.
+Eles criam as sete tabelas e carregam os dados iniciais. Podem ser executados
+mais de uma vez sem duplicar nada — usam `INSERT IGNORE` com `id` explícito.
 
 ### 3. Apontar para o servidor certo
 
@@ -84,11 +107,12 @@ copy config.properties.example config.properties   # Prompt / PowerShell
 
 - Desenvolvendo sozinho: `db.host=localhost`
 - Demonstrando o acesso via rede local: `db.host=` o IP da máquina que estiver
-  servindo o banco (nesta máquina, hoje, é `192.168.15.5` — confirme com
-  `ipconfig`, porque o IP muda de rede para rede)
+  servindo o banco (confirme com `ipconfig`, porque o IP muda de rede para rede)
+- `balanca.url=` o endereço da balança. O padrão usa mDNS
+  (`http://custocerto-balanca.local`); se a rede não repassar mDNS, use o IP que
+  aparece no monitor serial do ESP32.
 
-O `config.properties` está no `.gitignore` — a sua senha do MySQL não vai para o
-repositório.
+O `config.properties` está no `.gitignore` — a sua senha não vai para o repositório.
 
 ### 4. Conferir o ambiente antes de apresentar
 
@@ -96,8 +120,9 @@ repositório.
 mvnw.cmd exec:java -Dexec.mainClass=br.com.custocerto.util.DiagnosticoAmbiente
 ```
 
-Testa a configuração, a conexão, a leitura da tabela e cinco cenários de login
-(dois aceitos, três recusados). Se tudo sair com `OK`, a apresentação está segura.
+Testa a configuração, a conexão, cinco cenários de login, os indicadores
+financeiros do período, a variância por insumo e o rollback de uma transação
+impossível. Se tudo sair com `OK`, a apresentação está segura.
 
 ### 5. Executar
 
@@ -106,37 +131,30 @@ mvnw.cmd javafx:run     # Windows
 ./mvnw javafx:run       # Git Bash / Linux / macOS
 ```
 
-Na primeira execução o wrapper baixa o Maven e as dependências; leva alguns
-minutos. Das próximas vezes abre direto.
+Ou duplo clique em `abrir-sistema.bat`, que liga o banco e abre o sistema.
 
 ---
 
 ## Abrindo no Eclipse
 
 **File → Import → Maven → Existing Maven Projects**, apontando para a pasta
-`desktop` — não para a raiz do repositório, que só tem documentação. O Eclipse lê o
-`pom.xml` e resolve JavaFX e o driver MySQL sozinho.
+`desktop` — não para a raiz do repositório, que só tem documentação.
 
 Dois cuidados:
 
 **O Eclipse precisa rodar sobre JDK 21 ou superior.** Confira em
-*Window → Preferences → Java → Installed JREs*. Com um JDK anterior o projeto
-não compila.
+*Window → Preferences → Java → Installed JREs*.
 
 **Para executar, use a classe `Launcher`**, não a `App`:
-
 *Botão direito em `Launcher.java` → Run As → Java Application*
 
 A `App` estende `Application`, e a JVM recusa iniciar uma classe assim quando o
-JavaFX está no classpath em vez do module path — o erro é
-*"JavaFX runtime components are missing"*. A `Launcher` não estende nada, então
-a verificação não se aplica e o JavaFX sobe normalmente. É por isso que ela
-existe.
+JavaFX está no classpath em vez do module path — o erro é *"JavaFX runtime
+components are missing"*. A `Launcher` não estende nada, então a verificação não
+se aplica. Pela linha de comando o `mvnw javafx:run` continua valendo.
 
-Pela linha de comando o `mvnw javafx:run` continua valendo e pode apontar direto
-para a `App`, porque o plugin do JavaFX monta o module path por conta própria.
-
-O mesmo vale para IntelliJ e NetBeans.
+Passo a passo detalhado em
+[`docs/como-abrir-no-eclipse.md`](../docs/como-abrir-no-eclipse.md).
 
 ---
 
@@ -150,14 +168,9 @@ O mesmo vale para IntelliJ e NetBeans.
 | `rafael@letscoffee.com.br` | `operador123` | Operador | ativa |
 | `camila@letscoffee.com.br` | `gestor123` | Gestor | **inativa** |
 
-Entre com o administrador e depois com o operador para ver o menu mudar: o
-cartão "Usuários" só fica liberado para o administrador, e o de "Indicadores"
-não aparece para o operador. A conta da Camila serve para demonstrar a recusa
-de uma conta desativada.
-
 **As senhas não estão gravadas em texto puro.** Cada linha guarda um `salt`
 aleatório e o hash PBKDF2-HMAC-SHA256 com 210.000 iterações. Para trocar uma
-senha, gere um novo par e aplique um `UPDATE`:
+senha pela linha de comando:
 
 ```bash
 mvnw.cmd exec:java -Dexec.mainClass=br.com.custocerto.util.GeradorDeSenhas -Dexec.args="novaSenha"
@@ -168,58 +181,41 @@ mvnw.cmd exec:java -Dexec.mainClass=br.com.custocerto.util.GeradorDeSenhas -Dexe
 ## Arquitetura em camadas
 
 ```
-  view       TelaLogin, TelaPrincipal          telas JavaFX, sem SQL nem regra
+  view       10 telas JavaFX, sem SQL nem regra de negócio
     |
-  service    AutenticacaoService               regras: validação, senha, log
+  service    regras: validação, senha, log, análise de margem
     |
-  dao        UsuarioDAO, LogAcessoDAO          único lugar com SQL
-    |        ConexaoMySQL                      abre a conexão JDBC
+  dao        único lugar com SQL · ConexaoMySQL abre a conexão JDBC
     |
-  model      Usuario, Perfil                   dados que trafegam entre as camadas
-
-  util       SenhaUtil       hash PBKDF2 das senhas
-             ConfiguracaoBanco  lê o endereço do servidor
-             Sessao          guarda quem está logado
-             GeradorDeSenhas utilitário de linha de comando
+  model      dados que trafegam entre as camadas
+  util       senha, sessão, configuração, diagnóstico
 ```
 
-Cada camada só conhece a de baixo. A tela não sabe que existe MySQL; se o banco
-mudar, só o pacote `dao` é reescrito.
+54 classes, cerca de 11.700 linhas. Cada camada só conhece a de baixo: a tela não
+sabe que existe MySQL, e se o banco mudar, só o pacote `dao` é reescrito.
+
+Detalhamento — incluindo onde os conceitos de OO aparecem e por quê — em
+[`docs/arquitetura.md`](../docs/arquitetura.md).
 
 ---
 
 ## Banco de dados
 
-Duas tabelas, ambas em InnoDB e utf8mb4:
+Sete tabelas em InnoDB e utf8mb4, com **27 restrições** declaradas:
 
-**`usuarios`** — `PRIMARY KEY` em `id` com `AUTO_INCREMENT`, `UNIQUE` em `email`,
-`ENUM` limitando o perfil aos três valores válidos, `CHECK` no formato do e-mail
-e no tamanho do nome, `DEFAULT` para conta ativa e data de criação.
+| Tabela | O que guarda | Linhas |
+|---|---|---|
+| `usuarios` | contas de acesso | 5 |
+| `log_acesso` | tentativas de login, aceitas e recusadas | 27 |
+| `ingredientes` | estoque ativo | 8 |
+| `movimentacoes_estoque` | entradas e saídas | 10 |
+| `receitas` | o que a cafeteria vende | 6 |
+| `receita_ingredientes` | ficha técnica (N:M) | 22 |
+| `vendas` | faturamento | 12 |
 
-**`log_acesso`** — histórico de tentativas de login, aceitas e recusadas.
-`FOREIGN KEY` de `usuario_id` para `usuarios(id)`, com `ON DELETE SET NULL`
-(excluir um usuário não apaga o histórico) e `ON UPDATE CASCADE`. A coluna aceita
-nulo de propósito: quando o e-mail digitado não existe, não há usuário a
-referenciar, mas a tentativa precisa ficar registrada.
-
-Cada tabela recebe pelo menos 5 linhas via `INSERT`, conforme o requisito da
-matéria de Banco de Dados.
-
-As restrições foram conferidas no banco em execução:
-
-```
-tabela      restricao                tipo
-log_acesso  fk_log_acesso_usuario    FOREIGN KEY
-log_acesso  PRIMARY                  PRIMARY KEY
-usuarios    ck_usuarios_email        CHECK
-usuarios    ck_usuarios_nome         CHECK
-usuarios    PRIMARY                  PRIMARY KEY
-usuarios    uk_usuarios_email        UNIQUE
-```
-
-> **Pendência:** estas duas tabelas precisam entrar no DER que será entregue ao
-> Prof. Marlon, junto das tabelas de insumos e movimentações. O escopo do DER
-> ainda é uma decisão aberta do grupo (D5).
+Todas acima do mínimo de 5 linhas exigido pela matéria. O DER, o dicionário de
+dados e a lista completa de restrições estão em
+[`docs/modelo-de-dados.md`](../docs/modelo-de-dados.md).
 
 ---
 
@@ -229,53 +225,50 @@ usuarios    uk_usuarios_email        UNIQUE
 mvnw.cmd javadoc:javadoc
 ```
 
-O HTML é gerado em `target/reports/apidocs/index.html`. Todas as classes,
-métodos públicos e parâmetros estão documentados.
-
----
-
-## Segurança da tela de login
-
-- **Senhas com hash e salt** — o banco nunca guarda a senha legível.
-- **`PreparedStatement` em todas as consultas** — os valores digitados viajam
-  separados do texto do SQL, o que impede injeção de SQL. Sem isso, digitar
-  `' OR '1'='1` no campo de senha derrubaria a autenticação.
-- **Mensagem única para e-mail inexistente e senha errada** — mensagens
-  diferentes permitiriam descobrir quais e-mails estão cadastrados.
-- **Comparação de hash em tempo constante** — o tempo de resposta não revela
-  quantos caracteres foram acertados.
-- **Registro de todas as tentativas** em `log_acesso`, com a máquina de origem.
+O HTML sai em `target/reports/apidocs/index.html`, sem avisos.
 
 ---
 
 ## Roteiro sugerido para a apresentação
 
-1. Abrir o `console-mysql.bat` e rodar `SHOW TABLES;` e
-   `SELECT id, nome, email, perfil, ativo FROM usuarios;` — mostra o banco em MySQL.
-2. Abrir a aplicação e entrar como **administrador**. Mostrar que o cartão
-   "Usuários" está liberado.
-3. Sair e entrar como **operador** (`marina@letscoffee.com.br`). Mostrar que
-   "Usuários" e "Indicadores" aparecem bloqueados — é o controle por perfil.
-4. Tentar entrar com a senha errada e depois com a conta inativa da Camila.
-5. Voltar ao console SQL e rodar
+**Parte 1 — o banco é real** (2 min)
+
+1. Abrir o `console-mysql.bat` e rodar `SHOW TABLES;` — sete tabelas em MySQL.
+2. Rodar a consulta de restrições da seção 4 do
+   [modelo de dados](../docs/modelo-de-dados.md) — 27 restrições declaradas.
+
+**Parte 2 — perfis de acesso** (3 min)
+
+3. Entrar como **administrador**. Mostrar que o menu tem Usuários e as Análises.
+4. Sair e entrar como **operador** (`marina@letscoffee.com.br`). O menu encolhe:
+   sem Dashboard, sem Análises, sem Usuários.
+5. Tentar a senha errada, e depois a conta inativa da Camila.
+6. Voltar ao console e rodar
    `SELECT * FROM log_acesso ORDER BY id DESC LIMIT 5;` — as tentativas que
-   acabaram de acontecer estão registradas, inclusive a recusada.
-6. Se perguntarem sobre segurança: mostrar a coluna `senha_hash` no banco e
-   explicar que a senha nunca é gravada legível.
+   acabaram de acontecer estão lá, inclusive a recusada.
+
+**Parte 3 — o que o sistema descobre** (5 min)
+
+7. Abrir **Ficha Técnica**. Mostrar o custo do cappuccino somado a partir dos
+   insumos. Editar o preço do café no Estoque e voltar: a margem mudou sozinha.
+8. Abrir **Margem e Desperdício**. Os quadrantes classificam o cardápio; o Bolo
+   de Cenoura aparece como Estrela e o Café Expresso como Cavalo de carga.
+9. Descer até **Consumo Teórico × Real**. É o ponto alto: o sistema aponta, por
+   insumo e em reais, a diferença entre o que as vendas pediam e o que a balança
+   pesou. Explicar que a maioria dos sistemas comerciais só consegue estimar isso,
+   porque não mede o consumo real.
+10. Mostrar o aviso de "sem baixa registrada" para copo, canela e creme — e
+    explicar que exibir 100% de variância neles seria mentira.
+
+**Se perguntarem sobre segurança:** mostrar a coluna `senha_hash` no banco, e
+explicar o `PreparedStatement` em todos os DAOs.
 
 ---
 
 ## O que ainda falta
 
-> Aviso: o restante deste README ainda descreve a entrega anterior, quando o app
-> cobria apenas a autenticação. As telas de Dashboard, Balança, Estoque, Evolução
-> de Preços e Usuários já existem, e as tabelas de insumos e movimentações já
-> estão em MySQL. A descrição atualizada do sistema está em
-> [docs/arquitetura.md](../docs/arquitetura.md) e
-> [docs/modelo-de-dados.md](../docs/modelo-de-dados.md).
-
-Pendências reais, hoje:
-
-- Regravar o firmware no ESP32 — ele e o `balancaController` têm de subir juntos.
-- Abrir a porta 3306 no Firewall do Windows, para a demonstração de acesso via rede.
-- Decisões D2, D3, D4 e D5, ainda em aberto no grupo.
+- Gravar e testar o firmware no ESP32. Ele compila, mas nunca rodou em placa —
+  então a tela da Balança nunca recebeu leitura real.
+- Abrir a porta 3306 no Firewall do Windows, para a demonstração de acesso via
+  rede local.
+- Lotes de validade como entidade, o que destravaria a baixa por FIFO.

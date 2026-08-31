@@ -96,8 +96,13 @@ Contas de teste:
 - **Estoque** — cadastro de insumos, compras, retiradas, alertas de nível baixo e
   de validade.
 - **Balança** — leitura de peso em tempo real, tara e baixa automática no estoque.
-- **Indicadores** — valor imobilizado, giro, cobertura, curva ABC, custo consumido
-  e margem por produto.
+- **Ficha técnica** — o que a cafeteria vende e quanto cada produto custa,
+  recalculado a partir do preço atual dos insumos.
+- **Vendas** — registro do faturamento, sem o qual não existe cálculo de margem.
+- **Indicadores** — CMV real, margem, ticket médio, giro, cobertura em dias e
+  curva ABC.
+- **Margem e desperdício** — engenharia de cardápio e a comparação entre o
+  consumo que as vendas pediam e o que a balança pesou.
 - **Evolução de preços** — cada compra registra o preço pago, o que mostra a
   variação do custo de aquisição ao longo do tempo.
 

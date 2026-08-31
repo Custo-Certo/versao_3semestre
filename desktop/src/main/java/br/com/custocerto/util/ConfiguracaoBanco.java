@@ -135,6 +135,25 @@ public final class ConfiguracaoBanco {
     }
 
     /**
+     * Retorna o endereco da balanca na rede.
+     *
+     * <p>A balanca e um dispositivo de rede com API propria: responde
+     * {@code GET /peso} e {@code POST /tara}. Este aplicativo a consulta
+     * diretamente, sem passar por servidor nenhum.</p>
+     *
+     * <p>O padrao usa o nome anunciado por mDNS, que dispensa decorar o IP.
+     * Nem toda rede repassa mDNS -- se o nome nao resolver, coloque o IP do
+     * aparelho em {@code balanca.url} no config.properties. O IP aparece no
+     * monitor serial do ESP32 e na pagina de status da propria balanca.</p>
+     *
+     * @return a URL base da balanca, sem barra no final
+     */
+    public static String getUrlBalanca() {
+        String url = valor("balanca.url", "http://custocerto-balanca.local");
+        return url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+    }
+
+    /**
      * Lê uma propriedade, devolvendo um valor padrão quando ela está ausente.
      *
      * @param chave  o nome da propriedade

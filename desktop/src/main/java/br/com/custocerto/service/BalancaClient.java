@@ -12,57 +12,72 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Recebe o peso da balança em tempo real, direto do fluxo do backend.
+ * Lê o peso direto da balança.
  *
- * <p>O peso lido pelo ESP32 não passa pelo banco de dados: ele é enviado ao
- * backend Node, que o mantém em memória e o retransmite por <b>SSE</b>
- * (<em>Server-Sent Events</em>) — uma conexão HTTP que fica aberta e por onde o
- * servidor empurra cada nova leitura assim que ela chega. É o mesmo fluxo que o
- * painel web já consome, agora também consumido pelo desktop.</p>
+ * <p>A balança é um <b>dispositivo de rede</b>: o ESP32 sobe um servidor HTTP e
+ * responde {@code GET /peso} e {@code POST /tara}. Esta classe é o cliente
+ * dessa conversa.</p>
  *
- * <p><b>Por que SSE e não consulta repetida:</b> perguntar o peso a cada segundo
- * acrescentaria até um segundo de atraso, além de gerar tráfego constante mesmo
- * com a balança parada. No SSE o dado chega no instante em que o servidor o
- * recebe, então esta camada não soma praticamente nada à latência total.</p>
+ * <p><b>Antes era diferente, e valia a pena mudar.</b> O ESP32 empurrava a
+ * leitura para o servidor Node do painel web, e este aplicativo consumia o fluxo
+ * de lá. Isso amarrava o desktop a um projeto que hoje vive em outro
+ * repositório: sem aquele servidor no ar, a balança não existia para o Java.
+ * Agora os dois sistemas são clientes do mesmo aparelho, e nenhum depende do
+ * outro.</p>
+ *
+ * <p>Há um ganho que não é óbvio: as máquinas do grupo não têm privilégio de
+ * administrador, e abrir porta de <em>entrada</em> no Firewall do Windows foi
+ * justamente o que travou o acesso ao MySQL pela rede. Perguntar o peso é uma
+ * conexão de <em>saída</em>, que não precisa de regra nenhuma.</p>
+ *
+ * <p><b>Por que consulta repetida e não um fluxo aberto:</b> o aparelho é um
+ * microcontrolador, e manter conexões longas nele custa memória que faz falta.
+ * Perguntar a cada {@value #INTERVALO_MS} ms em rede local acrescenta um atraso
+ * muito menor do que a própria suavização do firmware, e o custo é irrelevante
+ * — a resposta tem poucas dezenas de bytes.</p>
  *
  * <p>Esta é a única parte do sistema que fala HTTP. Todo o acesso a dados
- * continua sendo feito pelo próprio Java via JDBC, conforme a decisão D1-A — o
- * que vem por aqui é apenas a leitura instantânea de um sensor, que não existe
- * no banco.</p>
+ * continua sendo feito pelo próprio Java via JDBC, conforme a decisão D1-A: o
+ * que vem por aqui é a leitura instantânea de um sensor, que não existe no
+ * banco.</p>
  *
  * @author Equipe Custo Certo - FATEC Indaiatuba
- * @version 1.0
+ * @version 2.0
  */
 public class BalancaClient {
+
+    /** Intervalo entre consultas ao aparelho, em milissegundos. */
+    private static final int INTERVALO_MS = 400;
 
     /** Extrai o peso do corpo JSON sem precisar de biblioteca externa. */
     private static final Pattern PESO =
             Pattern.compile("\"peso\"\\s*:\\s*(-?[0-9]+(?:\\.[0-9]+)?)");
 
-    /** Extrai o indicador de balança online do corpo JSON. */
-    private static final Pattern ONLINE =
-            Pattern.compile("\"online\"\\s*:\\s*(true|false)");
-
-    /** Espera antes de tentar reconectar quando o fluxo cai. */
-    private static final Duration ESPERA_RECONEXAO = Duration.ofSeconds(3);
+    /**
+     * Espera antes de voltar a consultar quando o aparelho não responde.
+     *
+     * <p>Mais longa que o intervalo normal de propósito: se a balança está
+     * desligada, insistir dez vezes por segundo só gasta rede e enche o log.</p>
+     */
+    private static final int ESPERA_APOS_FALHA_MS = 2000;
 
     private final HttpClient http = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(3))
+            .connectTimeout(Duration.ofSeconds(2))
             .build();
 
     private volatile boolean ativo;
     private Thread thread;
 
     /**
-     * Abre a conexão com o fluxo de peso e passa a entregar cada leitura.
+     * Começa a consultar a balança e a entregar cada leitura.
      *
-     * <p>A escuta roda em uma thread própria, marcada como <em>daemon</em> para
-     * não impedir o encerramento da aplicação. Se a conexão cair — servidor
-     * reiniciado, rede oscilando — ela é refeita sozinha.</p>
+     * <p>A consulta roda em uma thread própria, marcada como <em>daemon</em>
+     * para não impedir o encerramento da aplicação. Se o aparelho parar de
+     * responder, a thread continua tentando — a balança pode ser religada no
+     * meio da operação sem precisar reabrir a tela.</p>
      *
-     * @param aoReceber      chamado a cada leitura, com o peso e se a balança
-     *                       está respondendo
-     * @param aoMudarEstado  chamado quando a conexão com o servidor cai ou volta
+     * @param aoReceber     chamado a cada leitura bem-sucedida
+     * @param aoMudarEstado chamado quando a balança some ou volta a responder
      */
     public void conectar(Consumer<Leitura> aoReceber, Consumer<Boolean> aoMudarEstado) {
         if (ativo) {
@@ -71,86 +86,82 @@ public class BalancaClient {
         ativo = true;
 
         thread = new Thread(() -> {
+            boolean respondiaAntes = false;
+
             while (ativo) {
-                try {
-                    escutar(aoReceber, aoMudarEstado);
-                } catch (Exception e) {
-                    aoMudarEstado.accept(false);
+                java.math.BigDecimal peso = consultarPeso();
+                boolean respondeAgora = peso != null;
+
+                // Só avisa a tela quando o estado muda de verdade. Repetir o
+                // aviso a cada leitura faria a interface se redesenhar à toa.
+                if (respondeAgora != respondiaAntes) {
+                    aoMudarEstado.accept(respondeAgora);
+                    respondiaAntes = respondeAgora;
                 }
-                if (ativo) {
-                    try {
-                        Thread.sleep(ESPERA_RECONEXAO.toMillis());
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
+
+                if (respondeAgora) {
+                    aoReceber.accept(new Leitura(peso, true));
+                }
+
+                try {
+                    Thread.sleep(respondeAgora ? INTERVALO_MS : ESPERA_APOS_FALHA_MS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
                 }
             }
-        }, "balanca-sse");
+        }, "balanca-consulta");
 
         thread.setDaemon(true);
         thread.start();
     }
 
     /**
-     * Mantém a conexão aberta e processa cada linha recebida do servidor.
+     * Pergunta o peso ao aparelho.
      *
-     * @param aoReceber     destino das leituras
-     * @param aoMudarEstado destino das mudanças de conexão
-     * @throws IOException          se a conexão falhar
-     * @throws InterruptedException se a thread for interrompida
+     * @return o peso lido, ou {@code null} se a balança não respondeu
      */
-    private void escutar(Consumer<Leitura> aoReceber, Consumer<Boolean> aoMudarEstado)
-            throws IOException, InterruptedException {
+    private java.math.BigDecimal consultarPeso() {
+        try {
+            HttpRequest requisicao = HttpRequest.newBuilder()
+                    .uri(URI.create(ConfiguracaoBanco.getUrlBalanca() + "/peso"))
+                    .header("Accept", "application/json")
+                    .timeout(Duration.ofSeconds(2))
+                    .GET()
+                    .build();
 
-        HttpRequest requisicao = HttpRequest.newBuilder()
-                .uri(URI.create(ConfiguracaoBanco.getUrlApi() + "/balanca/stream"))
-                .header("Accept", "text/event-stream")
-                .timeout(Duration.ofHours(12))
-                .GET()
-                .build();
+            HttpResponse<String> resposta =
+                    http.send(requisicao, HttpResponse.BodyHandlers.ofString());
 
-        HttpResponse<java.util.stream.Stream<String>> resposta =
-                http.send(requisicao, HttpResponse.BodyHandlers.ofLines());
+            if (resposta.statusCode() != 200) {
+                return null;
+            }
 
-        if (resposta.statusCode() != 200) {
-            aoMudarEstado.accept(false);
-            return;
+            Matcher peso = PESO.matcher(resposta.body());
+            return peso.find() ? new java.math.BigDecimal(peso.group(1)) : null;
+
+        } catch (IOException | RuntimeException e) {
+            return null;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return null;
         }
-
-        aoMudarEstado.accept(true);
-
-        // O protocolo SSE manda uma linha por evento, no formato "data: {...}".
-        // Linhas iniciadas por ':' são apenas o heartbeat que mantém a conexão viva.
-        resposta.body().forEach(linha -> {
-            if (!ativo || !linha.startsWith("data:")) {
-                return;
-            }
-            String corpo = linha.substring(5).trim();
-            Matcher peso = PESO.matcher(corpo);
-            if (peso.find()) {
-                Matcher online = ONLINE.matcher(corpo);
-                aoReceber.accept(new Leitura(
-                        new java.math.BigDecimal(peso.group(1)),
-                        !online.find() || Boolean.parseBoolean(online.group(1))));
-            }
-        });
-
-        aoMudarEstado.accept(false);
     }
 
     /**
-     * Pede ao ESP32 que zere a balança.
+     * Manda a balança zerar.
      *
-     * <p>O pedido fica registrado no servidor e o firmware o consome na próxima
-     * troca de mensagens, executando a tara no próprio sensor.</p>
+     * <p>O pedido vai direto ao aparelho. Antes ele ficava guardado como uma
+     * flag no servidor Node, que o firmware consumia na troca de mensagens
+     * seguinte — e por isso firmware e backend precisavam subir juntos, sob pena
+     * de a tara nunca chegar. Esse acoplamento deixou de existir.</p>
      *
-     * @return {@code true} se o servidor aceitou o pedido
+     * @return {@code true} se o aparelho confirmou
      */
     public boolean solicitarTara() {
         try {
             HttpRequest requisicao = HttpRequest.newBuilder()
-                    .uri(URI.create(ConfiguracaoBanco.getUrlApi() + "/balanca/tara"))
+                    .uri(URI.create(ConfiguracaoBanco.getUrlBalanca() + "/tara"))
                     .header("Content-Type", "application/json")
                     .timeout(Duration.ofSeconds(3))
                     .POST(HttpRequest.BodyPublishers.ofString("{}"))
@@ -158,7 +169,7 @@ public class BalancaClient {
 
             return http.send(requisicao, HttpResponse.BodyHandlers.discarding())
                     .statusCode() < 400;
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             return false;
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -167,7 +178,7 @@ public class BalancaClient {
     }
 
     /**
-     * Encerra a escuta do fluxo de peso.
+     * Encerra a consulta à balança.
      */
     public void desconectar() {
         ativo = false;
@@ -180,7 +191,7 @@ public class BalancaClient {
      * Uma leitura instantânea da balança.
      *
      * @param peso   o peso lido, na unidade calibrada no firmware
-     * @param online se o ESP32 enviou leitura recentemente
+     * @param online se o aparelho respondeu a esta consulta
      */
     public record Leitura(java.math.BigDecimal peso, boolean online) {
     }

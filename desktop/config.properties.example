@@ -21,3 +21,14 @@ db.usuario=root
 db.senha=SUA_SENHA_DO_MYSQL
 
 db.parametros=useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo&characterEncoding=UTF-8&connectTimeout=3000&socketTimeout=15000
+
+# Endereco da balanca na rede local.
+# A balanca e um dispositivo com API propria: o app pergunta o peso a ela
+# diretamente, sem depender do servidor Node. O padrao abaixo usa mDNS e
+# dispensa decorar o IP; se a rede nao repassar mDNS, troque pelo IP que
+# aparece no monitor serial do ESP32.
+balanca.url=http://custocerto-balanca.local
+
+# Endereco do servidor Node, do outro projeto. Nao e necessario para o
+# funcionamento do app -- fica aqui apenas para quem quiser apontar para ele.
+api.url=http://localhost:3000

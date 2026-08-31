@@ -62,13 +62,29 @@ public class ItemFicha {
     }
 
     /**
-     * Retorna a quantidade seguida da unidade, para exibição.
+     * Retorna a quantidade na unidade mais legível, seguida da sigla.
      *
-     * @return por exemplo {@code "0,018 kg"}
+     * <p>Uma dose de café é guardada como {@code 0,018} kg, porque o insumo é
+     * estocado em quilo — mas ninguém pensa numa receita assim. Aqui ela volta
+     * como {@code 18 g}, que é como foi pensada. O valor guardado não muda; muda
+     * só a forma de mostrar.</p>
+     *
+     * @return por exemplo {@code "18 g"} ou {@code "1,5 kg"}
      */
     public String getQuantidadeFormatada() {
-        String sigla = unidade == null ? "" : " " + unidade.getSigla();
-        return quantidade.stripTrailingZeros().toPlainString().replace('.', ',') + sigla;
+        if (quantidade == null) {
+            return "";
+        }
+        if (unidade == null) {
+            return quantidade.stripTrailingZeros().toPlainString().replace('.', ',');
+        }
+
+        Unidade exibicao = unidade.melhorParaExibir(quantidade);
+        BigDecimal convertida = quantidade
+                .divide(unidade.fatorDe(exibicao), 6, RoundingMode.HALF_UP)
+                .stripTrailingZeros();
+
+        return convertida.toPlainString().replace('.', ',') + " " + exibicao.getSigla();
     }
 
     /**

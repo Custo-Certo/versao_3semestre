@@ -3,6 +3,7 @@ package br.com.custocerto.view;
 import br.com.custocerto.model.Ingrediente;
 import br.com.custocerto.model.ItemFicha;
 import br.com.custocerto.model.Receita;
+import br.com.custocerto.model.Unidade;
 import br.com.custocerto.service.CardapioException;
 import br.com.custocerto.service.EstoqueException;
 import br.com.custocerto.service.EstoqueService;
@@ -281,7 +282,7 @@ public class PaginaFichaTecnica extends VBox {
         campoDescricao.setPromptText("Expresso, leite vaporizado e canela");
 
         TextField campoPreco = new TextField(
-                edicao ? existente.getPrecoVenda().toPlainString() : "0");
+                edicao ? Formatos.paraCampo(existente.getPrecoVenda()) : "0");
 
         CheckBox campoAtivo = new CheckBox("Produto no cardápio");
         campoAtivo.setSelected(!edicao || existente.isAtivo());
@@ -315,8 +316,9 @@ public class PaginaFichaTecnica extends VBox {
         recalcular.run();
 
         Label ajuda = new Label(
-                "A quantidade vai na unidade do próprio insumo. Café cadastrado em kg, "
-                + "18 gramas por dose, se escreve 0,018.");
+                "Escolha a unidade em que prefere digitar cada linha. Uma ficha quase "
+                + "sempre é escrita em gramas, mesmo quando o insumo é comprado em quilo "
+                + "— digite 18 g e o sistema guarda 0,018 kg.");
         ajuda.getStyleClass().add("pagina-sub");
         ajuda.setWrapText(true);
         ajuda.setMaxWidth(430);
@@ -375,7 +377,7 @@ public class PaginaFichaTecnica extends VBox {
     private HBox criarLinhaFicha(ItemFicha existente, VBox container, Runnable aoRecalcular) {
         ChoiceBox<Ingrediente> campoInsumo = new ChoiceBox<>();
         campoInsumo.getItems().addAll(insumos);
-        campoInsumo.setPrefWidth(210);
+        campoInsumo.setPrefWidth(190);
 
         if (existente != null) {
             for (Ingrediente i : insumos) {
@@ -386,32 +388,54 @@ public class PaginaFichaTecnica extends VBox {
             }
         }
 
-        TextField campoQtd = new TextField(
-                existente == null ? "" : existente.getQuantidade().toPlainString());
-        campoQtd.setPromptText("0,018");
-        campoQtd.setPrefWidth(95);
+        TextField campoQtd = new TextField();
+        campoQtd.setPromptText("18");
+        campoQtd.setPrefWidth(90);
 
-        Label unidade = new Label();
-        unidade.getStyleClass().add("mini-rotulo");
-        unidade.setPrefWidth(34);
+        // A unidade em que a pessoa digita, que pode ser diferente da unidade em
+        // que o insumo é estocado. A conversão acontece ao salvar.
+        ChoiceBox<Unidade> campoUnidade = new ChoiceBox<>();
+        campoUnidade.setPrefWidth(70);
 
-        Runnable atualizarUnidade = () -> {
+        Runnable recarregarUnidades = () -> {
             Ingrediente i = campoInsumo.getValue();
-            unidade.setText(i == null ? "" : i.getUnidade().getSigla());
+            Unidade anterior = campoUnidade.getValue();
+            campoUnidade.getItems().clear();
+
+            if (i == null) {
+                return;
+            }
+            campoUnidade.getItems().addAll(i.getUnidade().getEquivalentes());
+            campoUnidade.setValue(
+                    campoUnidade.getItems().contains(anterior)
+                            ? anterior
+                            : campoUnidade.getItems().get(0));
         };
-        atualizarUnidade.run();
+        recarregarUnidades.run();
+
+        // Ao reabrir uma ficha, mostra a quantidade na unidade mais legível: uma
+        // dose de 0,018 kg volta como 18 g, que é como ela foi pensada.
+        if (existente != null && existente.getUnidade() != null) {
+            Unidade base = existente.getUnidade();
+            Unidade exibicao = base.melhorParaExibir(existente.getQuantidade());
+            campoUnidade.setValue(exibicao);
+            campoQtd.setText(Formatos.paraCampo(
+                    existente.getQuantidade().divide(base.fatorDe(exibicao),
+                            6, java.math.RoundingMode.HALF_UP).stripTrailingZeros()));
+        }
 
         campoInsumo.valueProperty().addListener((o, a, b) -> {
-            atualizarUnidade.run();
+            recarregarUnidades.run();
             aoRecalcular.run();
         });
+        campoUnidade.valueProperty().addListener((o, a, b) -> aoRecalcular.run());
         campoQtd.textProperty().addListener((o, a, b) -> aoRecalcular.run());
 
         Button remover = new Button();
         remover.getStyleClass().addAll("botao-mini", "botao-mini-perigo");
         remover.setGraphic(Icones.criar("excluir", 12, COR_ICONE));
 
-        HBox linha = new HBox(6, campoInsumo, campoQtd, unidade, remover);
+        HBox linha = new HBox(6, campoInsumo, campoQtd, campoUnidade, remover);
         linha.setAlignment(Pos.CENTER_LEFT);
 
         remover.setOnAction(e -> {
@@ -419,8 +443,35 @@ public class PaginaFichaTecnica extends VBox {
             aoRecalcular.run();
         });
 
-        linha.setUserData(new Object[] {campoInsumo, campoQtd});
+        linha.setUserData(new Object[] {campoInsumo, campoQtd, campoUnidade});
         return linha;
+    }
+
+    /**
+     * Lê uma linha do editor e devolve a quantidade já na unidade do insumo.
+     *
+     * @param campos os controles da linha, guardados no {@code userData}
+     * @return a quantidade convertida, ou {@code null} se a linha está incompleta
+     */
+    private BigDecimal quantidadeDaLinha(Object[] campos) {
+        @SuppressWarnings("unchecked")
+        ChoiceBox<Ingrediente> campoInsumo = (ChoiceBox<Ingrediente>) campos[0];
+        TextField campoQtd = (TextField) campos[1];
+        @SuppressWarnings("unchecked")
+        ChoiceBox<Unidade> campoUnidade = (ChoiceBox<Unidade>) campos[2];
+
+        Ingrediente insumo = campoInsumo.getValue();
+        Unidade digitada = campoUnidade.getValue();
+        if (insumo == null || digitada == null) {
+            return null;
+        }
+
+        try {
+            BigDecimal valor = Formatos.lerNumero(campoQtd.getText());
+            return valor.multiply(insumo.getUnidade().fatorDe(digitada));
+        } catch (RuntimeException incompleta) {
+            return null;
+        }
     }
 
     /**
@@ -441,11 +492,16 @@ public class PaginaFichaTecnica extends VBox {
 
             @SuppressWarnings("unchecked")
             ChoiceBox<Ingrediente> campoInsumo = (ChoiceBox<Ingrediente>) campos[0];
-            TextField campoQtd = (TextField) campos[1];
 
             Ingrediente insumo = campoInsumo.getValue();
             if (insumo == null) {
                 throw new CardapioException("Escolha o insumo em todas as linhas da ficha.");
+            }
+
+            BigDecimal quantidade = quantidadeDaLinha(campos);
+            if (quantidade == null) {
+                throw new CardapioException(
+                        "A quantidade de \"" + insumo.getNome() + "\" não é um número válido.");
             }
 
             ItemFicha item = new ItemFicha();
@@ -453,8 +509,7 @@ public class PaginaFichaTecnica extends VBox {
             item.setNomeIngrediente(insumo.getNome());
             item.setUnidade(insumo.getUnidade());
             item.setPrecoUnitario(insumo.getPreco());
-            item.setQuantidade(lerDecimal(campoQtd.getText(),
-                    "quantidade de " + insumo.getNome()));
+            item.setQuantidade(quantidade);
             itens.add(item);
         }
         return itens;
@@ -481,18 +536,11 @@ public class PaginaFichaTecnica extends VBox {
 
             @SuppressWarnings("unchecked")
             ChoiceBox<Ingrediente> campoInsumo = (ChoiceBox<Ingrediente>) campos[0];
-            TextField campoQtd = (TextField) campos[1];
-
             Ingrediente insumo = campoInsumo.getValue();
-            if (insumo == null) {
-                continue;
-            }
-            try {
-                BigDecimal qtd = new BigDecimal(
-                        campoQtd.getText().trim().replace(".", "").replace(",", "."));
+
+            BigDecimal qtd = quantidadeDaLinha(campos);
+            if (insumo != null && qtd != null) {
                 total = total.add(qtd.multiply(insumo.getPreco()));
-            } catch (RuntimeException incompleta) {
-                // linha ainda pela metade; não entra na prévia
             }
         }
         return total.setScale(2, RoundingMode.HALF_UP);
@@ -506,7 +554,7 @@ public class PaginaFichaTecnica extends VBox {
      */
     private BigDecimal lerPrecoSilencioso(TextField campo) {
         try {
-            return new BigDecimal(campo.getText().trim().replace(".", "").replace(",", "."));
+            return Formatos.lerNumero(campo.getText());
         } catch (RuntimeException incompleto) {
             return BigDecimal.ZERO;
         }
@@ -579,7 +627,7 @@ public class PaginaFichaTecnica extends VBox {
             throw new CardapioException("Preencha o campo " + campo + ".");
         }
         try {
-            return new BigDecimal(texto.trim().replace(".", "").replace(",", "."));
+            return Formatos.lerNumero(texto);
         } catch (NumberFormatException e) {
             throw new CardapioException("O valor de " + campo + " não é um número válido.");
         }

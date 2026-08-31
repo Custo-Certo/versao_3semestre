@@ -30,6 +30,68 @@ public final class Formatos {
     }
 
     /**
+     * Escreve um número em um campo de formulário, no padrão brasileiro.
+     *
+     * <p>Existe por causa de um defeito real: os formulários eram preenchidos com
+     * {@code BigDecimal.toPlainString()}, que escreve {@code 0.040} e {@code 8.00}
+     * com <b>ponto decimal</b>. Como {@link #lerNumero(String)} trata ponto como
+     * separador de milhar, reabrir um cadastro e salvar gravava {@code 40} no
+     * lugar de {@code 0,040} e {@code 800} no lugar de {@code 8,00}. Não era um
+     * erro de exibição: os dados iam corrompidos para o banco.</p>
+     *
+     * <p>Não usa separador de milhar, de propósito. Um campo de digitação com
+     * {@code 1.234,56} convida a pessoa a apagar o ponto no meio da edição e
+     * deixar o número ambíguo.</p>
+     *
+     * @param valor o valor a escrever
+     * @return o número com vírgula decimal, ou vazio se o valor for nulo
+     */
+    public static String paraCampo(BigDecimal valor) {
+        if (valor == null) {
+            return "";
+        }
+        return valor.toPlainString().replace('.', ',');
+    }
+
+    /**
+     * Converte o que foi digitado em um campo para número.
+     *
+     * <p>Aceita as duas formas que aparecem na prática, e a regra é a vírgula:</p>
+     *
+     * <ul>
+     *   <li><b>Com vírgula</b> — é o padrão brasileiro. A vírgula é o separador
+     *       decimal e os pontos são separadores de milhar, então
+     *       {@code 1.234,56} vira {@code 1234.56}.</li>
+     *   <li><b>Sem vírgula</b> — o ponto, se houver, é o separador decimal, então
+     *       {@code 0.018} vira {@code 0.018}. É o que o teclado numérico produz e
+     *       o que sai de {@code toPlainString()}.</li>
+     * </ul>
+     *
+     * <p>Resta um caso ambíguo: {@code 1.234} sem vírgula pode ser mil duzentos e
+     * trinta e quatro ou um inteiro e duzentos e trinta e quatro milésimos. Ele é
+     * lido como decimal, porque é assim que quantidades de ficha técnica são
+     * digitadas ({@code 0.018}) e é o que o preenchimento automático dos campos
+     * produz. Quem quiser o valor de milhar escreve {@code 1234}.</p>
+     *
+     * @param texto o conteúdo do campo
+     * @return o número correspondente
+     * @throws NumberFormatException se o texto não for um número
+     */
+    public static BigDecimal lerNumero(String texto) {
+        if (texto == null) {
+            throw new NumberFormatException("campo vazio");
+        }
+
+        String limpo = texto.trim().replace(" ", "").replace("R$", "");
+
+        if (limpo.contains(",")) {
+            limpo = limpo.replace(".", "").replace(",", ".");
+        }
+
+        return new BigDecimal(limpo);
+    }
+
+    /**
      * Formata um valor monetário com o símbolo da moeda.
      *
      * @param valor o valor a formatar

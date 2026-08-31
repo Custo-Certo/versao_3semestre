@@ -305,7 +305,7 @@ public class PaginaVendas extends VBox {
         campoProduto.setPrefWidth(320);
 
         TextField campoQtd = new TextField("1");
-        TextField campoPreco = new TextField(produtos.get(0).getPrecoVenda().toPlainString());
+        TextField campoPreco = new TextField(Formatos.paraCampo(produtos.get(0).getPrecoVenda()));
         DatePicker campoData = new DatePicker(LocalDate.now());
         TextField campoObs = new TextField();
         campoObs.setPromptText("Movimento da tarde");
@@ -330,7 +330,7 @@ public class PaginaVendas extends VBox {
 
         campoProduto.valueProperty().addListener((o, a, b) -> {
             if (b != null) {
-                campoPreco.setText(b.getPrecoVenda().toPlainString());
+                campoPreco.setText(Formatos.paraCampo(b.getPrecoVenda()));
             }
             recalcular.run();
         });
@@ -437,7 +437,7 @@ public class PaginaVendas extends VBox {
             throw new CardapioException("Preencha o campo " + campo + ".");
         }
         try {
-            return new BigDecimal(texto.trim().replace(".", "").replace(",", "."));
+            return Formatos.lerNumero(texto);
         } catch (NumberFormatException e) {
             throw new CardapioException("O valor de " + campo + " não é um número válido.");
         }

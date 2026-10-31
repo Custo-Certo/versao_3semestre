@@ -122,6 +122,9 @@ public final class Icones {
                 "M7 3.5h7.5L19 8v12.5H7z M14 3.5V8h5 M9.8 12h6.4 M9.8 15.4h6.4";
             case "vendas" ->
                 "M3 4.5h2.2l2.3 11h9.4l2.1-7.6H6.2 M10 20a1.15 1.15 0 1 0 0-.01 M17 20a1.15 1.15 0 1 0 0-.01";
+            case "receita" ->
+                "M5 3.5h14v17l-2.3-1.5-2.4 1.5-2.3-1.5-2.3 1.5-2.4-1.5L5 20.5z "
+                + "M8.5 8h7 M8.5 11.5h7 M8.5 15h4";
             case "margem" ->
                 "M4 20V9.5h4V20z M10 20V4h4v16z M16 20v-7h4v7z M2.5 20h19";
             default ->

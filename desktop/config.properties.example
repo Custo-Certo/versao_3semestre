@@ -27,6 +27,9 @@ db.parametros=useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/S
 # diretamente, sem depender do servidor Node. O padrao abaixo usa mDNS e
 # dispensa decorar o IP; se a rede nao repassar mDNS, troque pelo IP que
 # aparece no monitor serial do ESP32.
+# Com o firmware atual, a balanca envia o peso ao servidor Java do grupo
+# (PC do Lucas), e o app le de la. Troque pelo IP do servidor:
+#   balanca.url=http://10.108.212.250:3000/balanca
 balanca.url=http://custocerto-balanca.local
 
 # Endereco do servidor Node, do outro projeto. Nao e necessario para o

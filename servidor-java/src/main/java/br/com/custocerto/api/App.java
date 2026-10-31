@@ -2,6 +2,7 @@ package br.com.custocerto.api;
 
 import br.com.custocerto.api.balanca.EstadoBalanca;
 import br.com.custocerto.api.estoque.IngredienteDAO;
+import br.com.custocerto.api.receita.ReceitaDAO;
 import br.com.custocerto.api.modelo.ErroApp;
 import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
@@ -18,7 +19,7 @@ public class App {
 
     // ---- Corpos JSON recebidos (Jackson desserializa records nativamente) ----
     record PesoPayload(double peso) {}
-    record ConfirmarPayload(int ingredienteId, double quantidadeConsumida) {}
+    record ConfirmarPayload(int ingredienteId, double quantidadeConsumida, Integer execucaoId) {}
     record NovoIngrediente(String nome, String unidade, double preco,
                            double qtd, Double qtdMax, String validade) {}
     record CompraPayload(double quantidade, double precoUnitario,
@@ -26,6 +27,8 @@ public class App {
     record RetiradaPayload(double quantidade) {}
     record AtualizarPayload(String nome, String unidade, Double preco,
                             Double qtdMax, String validade) {}
+    record IniciarReceitaPayload(String nome) {}
+    record FinalizarReceitaPayload(Integer porcoes, Double precoVenda) {}
 
     public static void main(String[] args) {
         Javalin app = Javalin.create(cfg -> {
@@ -77,18 +80,28 @@ public class App {
             ctx.json(Map.of("ok", true));
         });
         // Painel -> servidor: confirma a pesagem e abate estoque.
+        // Se vier execucaoId, a saida e vinculada a uma receita em andamento.
         app.post("/balanca/confirmar", ctx -> {
             ConfirmarPayload c = ctx.bodyAsClass(ConfirmarPayload.class);
             if (EstadoBalanca.peso() <= 0.001)
                 throw new ErroApp("Peso invalido. Coloque o item na balanca.", 400);
-            var ing = IngredienteDAO.abaterEstoque(
-                c.ingredienteId(), c.quantidadeConsumida(),
-                "Pesagem de " + c.quantidadeConsumida());
-            ctx.json(Map.of(
-                "ok", true,
-                "pesoConfirmado", EstadoBalanca.peso(),
-                "ingredienteId", ing.id(),
-                "novaQtd", ing.qtd()));
+            if (c.execucaoId() != null) {
+                var exec = ReceitaDAO.adicionarItem(
+                    c.execucaoId(), c.ingredienteId(), c.quantidadeConsumida(), "Pesagem (receita)");
+                ctx.json(Map.of(
+                    "ok", true,
+                    "pesoConfirmado", EstadoBalanca.peso(),
+                    "receita", exec));
+            } else {
+                var ing = IngredienteDAO.abaterEstoque(
+                    c.ingredienteId(), c.quantidadeConsumida(),
+                    "Pesagem de " + c.quantidadeConsumida());
+                ctx.json(Map.of(
+                    "ok", true,
+                    "pesoConfirmado", EstadoBalanca.peso(),
+                    "ingredienteId", ing.id(),
+                    "novaQtd", ing.qtd()));
+            }
         });
 
         // =============================================================
@@ -109,7 +122,6 @@ public class App {
         app.put("/ingredientes/{id}", ctx -> {
             int id = Integer.parseInt(ctx.pathParam("id"));
             AtualizarPayload u = ctx.bodyAsClass(AtualizarPayload.class);
-            // O front atual nao usa PUT; validade so e alterada quando enviada nao-nula.
             var atualizado = IngredienteDAO.atualizar(
                 id, u.nome(), u.unidade(), u.preco(), u.qtdMax(),
                 u.validade(), u.validade() != null);
@@ -140,6 +152,41 @@ public class App {
                 throw new ErroApp("Quantidade invalida", 400);
             var atualizado = IngredienteDAO.abaterEstoque(id, r.quantidade(), "Retirada manual");
             ctx.json(atualizado);
+        });
+
+        // =============================================================
+        // RECEITAS (CMV real a partir da pesagem)
+        // =============================================================
+        // Rotas literais ANTES de /receitas/{id} para nao serem capturadas como id.
+        app.get("/receitas/nomes", ctx -> ctx.json(ReceitaDAO.nomesUsados()));
+        app.get("/receitas/ativa", ctx -> {
+            var a = ReceitaDAO.ativa();
+            ctx.json(a != null ? a : Map.of("ativa", false));
+        });
+        app.post("/receitas/iniciar", ctx -> {
+            var p = ctx.bodyAsClass(IniciarReceitaPayload.class);
+            ctx.status(201).json(ReceitaDAO.iniciar(p.nome()));
+        });
+
+        app.get("/receitas", ctx -> ctx.json(ReceitaDAO.listar()));
+        app.get("/receitas/{id}", ctx -> {
+            var r = ReceitaDAO.buscar(Integer.parseInt(ctx.pathParam("id")));
+            if (r == null) throw new ErroApp("Receita nao encontrada", 404);
+            ctx.json(r);
+        });
+        app.post("/receitas/{id}/finalizar", ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id"));
+            var p = ctx.bodyAsClass(FinalizarReceitaPayload.class);
+            ctx.json(ReceitaDAO.finalizar(id, p.porcoes(), p.precoVenda()));
+        });
+        app.post("/receitas/{id}/cancelar", ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id"));
+            ctx.json(ReceitaDAO.cancelar(id));
+        });
+        app.delete("/receitas/{id}/itens/{movId}", ctx -> {
+            int id = Integer.parseInt(ctx.pathParam("id"));
+            int movId = Integer.parseInt(ctx.pathParam("movId"));
+            ctx.json(ReceitaDAO.estornarItem(id, movId));
         });
 
         app.start(3000);

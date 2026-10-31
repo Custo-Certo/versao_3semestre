@@ -64,6 +64,7 @@ const pageTitles = {
   balanca: 'Balança Inteligente',
   estoque: 'Estoque',
   evolucao: 'Evolução de Preços',
+  receitas: 'Receitas',
 };
 
 async function showPage(page, btn) {
@@ -73,10 +74,11 @@ async function showPage(page, btn) {
   btn.classList.add('active');
   document.getElementById('topbar-title').textContent = pageTitles[page];
   await carregarDados();
-  if (page === 'balanca')   popularSelect();
+  if (page === 'balanca')   { popularSelect(); renderReceitaBar(); }
   if (page === 'estoque')   renderEstoque();
   if (page === 'dashboard') renderDashboard();
   if (page === 'evolucao')  renderEvolucao();
+  if (page === 'receitas')  renderReceitas();
 }
 window.showPage = showPage;
 
@@ -582,12 +584,15 @@ async function confirmarPeso() {
   if (ing.unidade === 'g' || ing.unidade === 'ml') consumo = pesoAtual * 1000;
   if (consumo > ing.qtd) { showToast('⚠ Estoque insuficiente!', true); return; }
   try {
+    const body = { ingredienteId: ing.id, quantidadeConsumida: consumo };
+    if (receitaAtiva && receitaAtiva.id) body.execucaoId = receitaAtiva.id;
     const data = await api('/balanca/confirmar', {
       method: 'POST',
-      body: JSON.stringify({ ingredienteId: ing.id, quantidadeConsumida: consumo }),
+      body: JSON.stringify(body),
     });
     if (data && !data.ok) { showToast(data.erro || 'Erro na confirmação', true); return; }
-    showToast(`✓ ${consumo.toFixed(3)} ${ing.unidade} abatidos (FIFO)`);
+    if (data && data.receita) { receitaAtiva = data.receita; renderReceitaBar(); }
+    showToast(`✓ ${consumo.toFixed(3)} ${ing.unidade} abatidos${(receitaAtiva ? ' · somado à receita' : '')}`);
     await carregarDados();
     popularSelect();
   } catch (err) {
@@ -774,4 +779,211 @@ function showToast(msg, err = false) {
   popularSelect();
   renderEstoque();
   renderDashboard();
+})();
+
+// =======================================================================
+// RECEITAS (CMV real a partir da pesagem)
+// =======================================================================
+let receitaAtiva = null;
+
+function fmtReal(v) {
+  return 'R$ ' + (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function garantirPaginaReceitas() {
+  if (document.getElementById('page-receitas')) return;
+  const content = document.querySelector('.content');
+  if (!content) return;
+  const div = document.createElement('div');
+  div.id = 'page-receitas';
+  div.className = 'page';
+  div.innerHTML = `
+    <div class="card">
+      <div class="card-title">Histórico de Receitas</div>
+      <div id="receitas-historico"></div>
+    </div>`;
+  content.appendChild(div);
+}
+
+async function carregarReceitaAtiva() {
+  try {
+    const r = await api('/receitas/ativa');
+    receitaAtiva = (r && r.id) ? r : null;
+  } catch (e) { receitaAtiva = null; }
+}
+
+async function carregarNomesReceita() {
+  try {
+    const nomes = await api('/receitas/nomes');
+    const dl = document.getElementById('rec-nomes');
+    if (dl && Array.isArray(nomes)) dl.innerHTML = nomes.map(n => `<option value="${n}"></option>`).join('');
+  } catch (e) {}
+}
+
+function classeCmv(pct) {
+  if (pct == null) return { cls: 'var(--muted)', txt: '—' };
+  if (pct <= 31) return { cls: 'var(--green)', txt: '✓ Dentro do ideal' };
+  if (pct <= 35) return { cls: 'var(--orange)', txt: '⚠ Levemente alto' };
+  return { cls: 'var(--red)', txt: '✗ Acima do limite' };
+}
+
+function renderReceitaBar() {
+  const bar = document.getElementById('receita-bar');
+  const card = document.getElementById('receita-itens-card');
+  if (!bar) return;
+
+  if (!receitaAtiva) {
+    bar.innerHTML = `
+      <div class="card" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
+          <div class="card-title" style="margin-bottom:6px"><i class="fas fa-receipt"></i> Receita</div>
+          <input id="rec-nome" list="rec-nomes" class="ingredient-select" style="width:100%"
+                 placeholder="Nome da receita (ex.: Cappuccino Especial)">
+          <datalist id="rec-nomes"></datalist>
+        </div>
+        <button class="btn-scale btn-confirm" style="min-width:160px" onclick="iniciarReceita()">
+          <i class="fas fa-play"></i> Iniciar receita
+        </button>
+      </div>`;
+    carregarNomesReceita();
+    if (card) card.hidden = true;
+    return;
+  }
+
+  const r = receitaAtiva;
+  const nItens = (r.itens || []).length;
+  bar.innerHTML = `
+    <div class="card" style="border-left:4px solid var(--green)">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+        <div>
+          <div style="font-weight:700;font-size:15px"><i class="fas fa-receipt" style="color:var(--green)"></i> ${r.nome}
+            <span style="font-size:11px;font-weight:700;color:var(--green);background:rgba(0,168,107,.12);padding:2px 8px;border-radius:999px;margin-left:6px">em andamento</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-top:3px">${nItens} ingrediente(s) · custo até agora <strong style="color:var(--green)">${fmtReal(r.custoTotal)}</strong></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap">
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Porções</div>
+            <input id="rec-porcoes" type="number" min="1" value="1" class="ingredient-select" style="width:80px"></div>
+          <div><div style="font-size:11px;color:var(--muted);margin-bottom:2px">Preço venda (R$/porção)</div>
+            <input id="rec-preco" type="number" min="0" step="0.01" placeholder="opcional" class="ingredient-select" style="width:150px"></div>
+          <button class="btn-scale btn-confirm" onclick="finalizarReceita()"><i class="fas fa-check"></i> Finalizar</button>
+          <button class="btn-scale btn-tare" style="color:var(--red);border-color:var(--red)" onclick="cancelarReceita()"><i class="fas fa-times"></i> Cancelar</button>
+        </div>
+      </div>
+    </div>`;
+
+  if (card) {
+    card.hidden = false;
+    const itens = r.itens || [];
+    const lista = document.getElementById('receita-itens');
+    const total = document.getElementById('receita-total');
+    if (lista) {
+      lista.innerHTML = itens.length ? itens.map(it => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+          <div><div style="font-weight:600">${it.nome}</div>
+            <div style="font-size:12px;color:var(--muted)">${fmtQtd(it.quantidade, it.unidade)} ${it.unidade} · ${fmtReal(it.precoUnitario)}/${it.unidade}</div></div>
+          <div style="display:flex;align-items:center;gap:14px">
+            <strong>${fmtReal(it.custo)}</strong>
+            <span onclick="estornarItemReceita(${it.movId})" title="Estornar (devolve ao estoque)" style="cursor:pointer;color:var(--muted);font-size:13px">✕</span>
+          </div>
+        </div>`).join('') : `<div style="color:var(--muted);padding:16px;text-align:center">Pese um ingrediente e confirme para somar aqui.</div>`;
+    }
+    if (total) total.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:2px solid var(--border)">
+        <span style="font-size:13px;color:var(--muted);font-weight:600">Custo acumulado</span>
+        <span style="font-size:20px;font-weight:800;color:var(--green)">${fmtReal(r.custoTotal)}</span>
+      </div>`;
+  }
+}
+
+async function iniciarReceita() {
+  const nome = (document.getElementById('rec-nome') ? document.getElementById('rec-nome').value : '').trim();
+  if (!nome) { showToast('Dê um nome à receita', true); return; }
+  try {
+    receitaAtiva = await api('/receitas/iniciar', { method: 'POST', body: JSON.stringify({ nome }) });
+    showToast(`Receita "${nome}" iniciada`);
+    renderReceitaBar();
+  } catch (err) { showToast('Erro: ' + err.message, true); }
+}
+window.iniciarReceita = iniciarReceita;
+
+async function finalizarReceita() {
+  if (!receitaAtiva) return;
+  const porcoes = parseInt(document.getElementById('rec-porcoes') ? document.getElementById('rec-porcoes').value : '1') || 1;
+  const precoRaw = document.getElementById('rec-preco') ? document.getElementById('rec-preco').value : '';
+  const precoVenda = precoRaw ? parseFloat(precoRaw) : null;
+  try {
+    const r = await api(`/receitas/${receitaAtiva.id}/finalizar`, {
+      method: 'POST', body: JSON.stringify({ porcoes, precoVenda }),
+    });
+    receitaAtiva = null;
+    renderReceitaBar();
+    const cmvTxt = (r.cmvPercent != null) ? ' (' + r.cmvPercent.toFixed(1) + '%)' : '';
+    showToast(`✓ ${r.nome} finalizada · CMV ${fmtReal(r.custoTotal)}${cmvTxt}`);
+    await carregarDados();
+    popularSelect();
+    const btn = Array.from(document.querySelectorAll('.nav-btn')).find(b => /Receitas/.test(b.textContent));
+    if (btn) showPage('receitas', btn);
+  } catch (err) { showToast('Erro: ' + err.message, true); }
+}
+window.finalizarReceita = finalizarReceita;
+
+async function cancelarReceita() {
+  if (!receitaAtiva) return;
+  if (!confirm('Cancelar a receita? Os ingredientes pesados voltam ao estoque.')) return;
+  try {
+    await api(`/receitas/${receitaAtiva.id}/cancelar`, { method: 'POST' });
+    receitaAtiva = null;
+    renderReceitaBar();
+    showToast('Receita cancelada · estoque devolvido');
+    await carregarDados();
+    popularSelect();
+  } catch (err) { showToast('Erro: ' + err.message, true); }
+}
+window.cancelarReceita = cancelarReceita;
+
+async function estornarItemReceita(movId) {
+  if (!receitaAtiva) return;
+  try {
+    receitaAtiva = await api(`/receitas/${receitaAtiva.id}/itens/${movId}`, { method: 'DELETE' });
+    renderReceitaBar();
+    showToast('Item estornado · devolvido ao estoque');
+    await carregarDados();
+    popularSelect();
+  } catch (err) { showToast('Erro: ' + err.message, true); }
+}
+window.estornarItemReceita = estornarItemReceita;
+
+async function renderReceitas() {
+  garantirPaginaReceitas();
+  const box = document.getElementById('receitas-historico');
+  if (!box) return;
+  let lista = [];
+  try { lista = await api('/receitas'); }
+  catch (e) { box.innerHTML = '<div style="color:var(--red);padding:16px">Erro ao carregar.</div>'; return; }
+  if (!lista.length) { box.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Nenhuma receita registrada ainda.</div>'; return; }
+  box.innerHTML = `
+    <table class="cost-table">
+      <thead><tr><th>Receita</th><th>Status</th><th>Custo (CMV)</th><th>CMV %</th><th>Margem</th><th>Início</th></tr></thead>
+      <tbody>
+        ${lista.map(r => {
+          const c = classeCmv(r.cmvPercent);
+          return `<tr>
+            <td style="font-weight:600">${r.nome}</td>
+            <td>${r.status}</td>
+            <td>${fmtReal(r.custoTotal)}</td>
+            <td style="color:${c.cls};font-weight:700">${r.cmvPercent != null ? r.cmvPercent.toFixed(1) + '%' : '—'}</td>
+            <td>${r.margem != null ? fmtReal(r.margem) : '—'}</td>
+            <td style="color:var(--muted)">${(r.inicio || '').replace('T', ' ').slice(0, 16)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+}
+
+// Inicializa a feature de receita (depois do init principal; tudo já definido aqui).
+(async function initReceita() {
+  garantirPaginaReceitas();
+  await carregarReceitaAtiva();
+  renderReceitaBar();
 })();

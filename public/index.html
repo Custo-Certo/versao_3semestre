@@ -637,6 +637,9 @@
         <button class="nav-btn" onclick="showPage('evolucao',this)">
             <i class="fas fa-chart-line"></i> Evolução de Preços
         </button>
+        <button class="nav-btn" onclick="showPage('receitas',this)">
+            <i class="fas fa-receipt"></i> Receitas
+        </button>
     </div>
     <div class="sidebar-footer">Custo Certo v2.0 · © 2025</div>
 </aside>
@@ -716,6 +719,7 @@
 
         <!-- ======= BALANÇA ======= -->
         <div id="page-balanca" class="page active">
+            <div id="receita-bar"></div>
             <div class="balanca-layout">
                 <div class="balanca-panel">
                     <div class="card">
@@ -747,6 +751,11 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+            <div id="receita-itens-card" class="card" hidden style="margin-top:16px">
+                <div class="card-title">Ingredientes da receita</div>
+                <div id="receita-itens"></div>
+                <div id="receita-total"></div>
             </div>
         </div>
 

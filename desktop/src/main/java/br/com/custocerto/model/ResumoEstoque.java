@@ -5,40 +5,39 @@ import java.math.RoundingMode;
 import java.util.List;
 
 /**
- * Os indicadores do painel, calculados a partir da lista de insumos.
- *
- * <p>As fórmulas repetem exatamente as do painel web, para que as duas
- * interfaces nunca mostrem números diferentes para o mesmo estoque:</p>
+ * Os indicadores de estoque, calculados a partir da lista de insumos.
  *
  * <ul>
  *   <li><b>Valor em estoque</b> — soma de preço × quantidade de cada insumo.</li>
  *   <li><b>Itens em alerta</b> — insumos com menos de 25% da capacidade.</li>
  *   <li><b>Vencendo</b> — insumos que vencem nos próximos 5 dias.</li>
- *   <li><b>CMV</b> — custo dividido pela receita estimada, que o painel projeta
- *       como 3,5 vezes o custo enquanto o módulo de vendas não existe.</li>
+ *   <li><b>Vencidos</b> — insumos que já passaram da validade.</li>
  * </ul>
  *
+ * <p><b>O CMV saiu daqui.</b> Esta classe calculava um "CMV estimado" que na
+ * verdade era uma constante: a receita era estimada multiplicando o valor em
+ * estoque por 3,5, e o CMV era o valor em estoque dividido por essa receita. Os
+ * dois lados da divisão eram a mesma grandeza, então ela se cancelava e o
+ * resultado era sempre 1 ÷ 3,5 — 28,6%, qualquer que fosse a situação da
+ * cafeteria. Como o limite de "ideal" era 31%, o indicador também apontava para o
+ * verde para sempre.</p>
+ *
+ * <p>O CMV de verdade precisa de receita medida e de custo do que foi
+ * <em>vendido</em>, não do que está parado na prateleira. Ele agora vive em
+ * {@link ResumoFinanceiro}, que apura os dois lados a partir de {@code vendas},
+ * das fichas técnicas e das movimentações de estoque.</p>
+ *
  * @author Equipe Custo Certo - FATEC Indaiatuba
- * @version 1.0
+ * @version 2.0
  */
 public class ResumoEstoque {
-
-    /** Multiplicador usado para estimar a receita a partir do custo. */
-    private static final BigDecimal FATOR_RECEITA = BigDecimal.valueOf(3.5);
-
-    /** Percentual de CMV até o qual o resultado é considerado saudável. */
-    private static final double CMV_IDEAL = 31.0;
-
-    /** Percentual de CMV a partir do qual o resultado é considerado ruim. */
-    private static final double CMV_LIMITE = 35.0;
 
     private final BigDecimal valorEmEstoque;
     private final int totalItens;
     private final int itensEmAlerta;
     private final int itensVencendo;
     private final int itensVencidos;
-    private final BigDecimal receitaEstimada;
-    private final double percentualCmv;
+    private final BigDecimal valorVencido;
 
     /**
      * Calcula todos os indicadores a partir da lista de insumos.
@@ -47,6 +46,7 @@ public class ResumoEstoque {
      */
     public ResumoEstoque(List<Ingrediente> ingredientes) {
         BigDecimal total = BigDecimal.ZERO;
+        BigDecimal perdido = BigDecimal.ZERO;
         int alerta = 0;
         int vencendo = 0;
         int vencidos = 0;
@@ -58,20 +58,18 @@ public class ResumoEstoque {
             }
             if (i.isVencido()) {
                 vencidos++;
+                perdido = perdido.add(i.getValorEmEstoque());
             } else if (i.isVencimentoProximo()) {
                 vencendo++;
             }
         }
 
         this.valorEmEstoque = total.setScale(2, RoundingMode.HALF_UP);
+        this.valorVencido = perdido.setScale(2, RoundingMode.HALF_UP);
         this.totalItens = ingredientes.size();
         this.itensEmAlerta = alerta;
         this.itensVencendo = vencendo;
         this.itensVencidos = vencidos;
-        this.receitaEstimada = total.multiply(FATOR_RECEITA).setScale(2, RoundingMode.HALF_UP);
-        this.percentualCmv = receitaEstimada.signum() > 0
-                ? valorEmEstoque.doubleValue() / receitaEstimada.doubleValue() * 100.0
-                : 0;
     }
 
     /**
@@ -81,6 +79,18 @@ public class ResumoEstoque {
      */
     public BigDecimal getValorEmEstoque() {
         return valorEmEstoque;
+    }
+
+    /**
+     * Retorna quanto dinheiro está parado em insumos já vencidos.
+     *
+     * <p>Contar itens vencidos não ajuda a decidir nada: dois potes de canela e
+     * dois quilos de café apareciam como o mesmo "2". O que interessa é o valor.</p>
+     *
+     * @return a soma do valor dos insumos vencidos que ainda têm saldo
+     */
+    public BigDecimal getValorVencido() {
+        return valorVencido;
     }
 
     /**
@@ -117,48 +127,5 @@ public class ResumoEstoque {
      */
     public int getItensVencidos() {
         return itensVencidos;
-    }
-
-    /**
-     * Retorna a receita projetada a partir do custo em estoque.
-     *
-     * @return a receita estimada
-     */
-    public BigDecimal getReceitaEstimada() {
-        return receitaEstimada;
-    }
-
-    /**
-     * Retorna o Custo de Mercadoria Vendida em porcentagem.
-     *
-     * @return o percentual de CMV
-     */
-    public double getPercentualCmv() {
-        return percentualCmv;
-    }
-
-    /**
-     * Classifica o CMV segundo as faixas usadas no painel web.
-     *
-     * @return {@code "ok"} até 31%, {@code "warn"} até 35%, {@code "bad"} acima
-     */
-    public String getClassificacaoCmv() {
-        if (percentualCmv <= CMV_IDEAL) {
-            return "ok";
-        }
-        return percentualCmv <= CMV_LIMITE ? "warn" : "bad";
-    }
-
-    /**
-     * Monta a frase que acompanha o indicador de CMV.
-     *
-     * @return o texto de classificação exibido no painel
-     */
-    public String getRotuloCmv() {
-        return switch (getClassificacaoCmv()) {
-            case "ok" -> "Dentro do ideal";
-            case "warn" -> "Levemente alto";
-            default -> "Acima do limite";
-        };
     }
 }

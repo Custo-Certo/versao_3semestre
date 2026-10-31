@@ -276,9 +276,9 @@ public class PaginaEstoque extends VBox {
         campoUnidade.getItems().addAll(Unidade.values());
         campoUnidade.setValue(edicao ? existente.getUnidade() : Unidade.KG);
 
-        TextField campoPreco = new TextField(edicao ? existente.getPreco().toPlainString() : "0");
-        TextField campoQtd = new TextField(edicao ? existente.getQtd().toPlainString() : "0");
-        TextField campoQtdMax = new TextField(edicao ? existente.getQtdMax().toPlainString() : "0");
+        TextField campoPreco = new TextField(edicao ? Formatos.paraCampo(existente.getPreco()) : "0");
+        TextField campoQtd = new TextField(edicao ? Formatos.paraCampo(existente.getQtd()) : "0");
+        TextField campoQtdMax = new TextField(edicao ? Formatos.paraCampo(existente.getQtdMax()) : "0");
 
         DatePicker campoValidade = new DatePicker(edicao ? existente.getValidade() : null);
         campoValidade.setPromptText("opcional");
@@ -328,7 +328,7 @@ public class PaginaEstoque extends VBox {
         TextField campoQtd = new TextField();
         campoQtd.setPromptText("em " + i.getUnidade().getSigla());
 
-        TextField campoPreco = new TextField(i.getPreco().toPlainString());
+        TextField campoPreco = new TextField(Formatos.paraCampo(i.getPreco()));
         TextField campoObs = new TextField();
         campoObs.setPromptText(entrada ? "Compra mensal" : "Consumo pesado na balança");
 
@@ -422,7 +422,7 @@ public class PaginaEstoque extends VBox {
             throw new EstoqueException("Preencha o campo " + campo + ".");
         }
         try {
-            return new BigDecimal(texto.trim().replace(".", "").replace(",", "."));
+            return Formatos.lerNumero(texto);
         } catch (NumberFormatException e) {
             throw new EstoqueException("O valor de " + campo + " não é um número válido.");
         }

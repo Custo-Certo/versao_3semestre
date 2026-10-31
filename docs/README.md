@@ -4,6 +4,8 @@
 |---|---|
 | [Como abrir o projeto no Eclipse](como-abrir-no-eclipse.md) | Passo a passo para clonar, importar e rodar o app desktop. Comece por aqui. |
 | [Decisões da Migração](decisoes-da-migracao.html) | Documento completo do semestre: as 8 decisões, a arquitetura em camadas, o modelo de dados em MySQL, o fluxo do login, a balança em tempo real e a rastreabilidade dos requisitos das duas matérias. |
+| [Modelo de dados](modelo-de-dados.md) | Entrega de **Banco de Dados**: o DER das 7 tabelas, o dicionário de dados, as 27 restrições conferidas no banco e a carga inicial. |
+| [Arquitetura do sistema](arquitetura.md) | Entrega de **POO**: as camadas do app Java, orientação a objetos na prática, a balança como dispositivo de rede, acesso ao banco pela rede local, segurança e Javadoc. |
 | [README do app desktop](../desktop/README.md) | Instalação, contas de teste, estrutura das camadas e roteiro de apresentação. |
 
 ## Sobre o arquivo `decisoes-da-migracao.html`
@@ -29,4 +31,7 @@ aval do grupo**. Continuam em aberto:
 - **D2** — onde o MySQL vai rodar na apresentação (trava a demonstração de acesso via rede local)
 - **D3** — o que acontece com o deploy no Render e o banco Turso
 - **D4** — quem recebe o peso do ESP32
-- **D5** — o escopo do DER a ser entregue
+- **D5** — o escopo do DER. **Resolvida na prática:** `receitas`,
+  `receita_ingredientes` e `vendas` foram criadas e estão em uso, e o DER
+  entregue tem as 7 tabelas. Continua em aberto apenas a entidade de **lote de
+  validade**, que destravaria a baixa por FIFO.

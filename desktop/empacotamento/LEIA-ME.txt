@@ -1,0 +1,30 @@
+CUSTO CERTO - App desktop para Windows
+======================================
+
+Nao precisa instalar Java nem Maven: o programa ja traz tudo.
+
+1. Extraia o zip numa pasta (por exemplo C:\Custo Certo).
+
+2. Na pasta "Custo Certo", copie "config.properties.example" para
+   "config.properties" e preencha a conexao com o banco:
+
+     Usando o servidor do grupo (PC do Lucas, na rede AndroidAP):
+       db.host=10.108.212.250
+       db.usuario=custocerto
+       db.senha=  (peca ao Lucas)
+
+     Usando o MySQL do seu proprio PC:
+       db.host=localhost
+       db.usuario=root
+       db.senha=  (a senha do seu MySQL)
+
+3. De duplo clique em "Custo Certo.exe".
+   Para fixar na barra de tarefas: botao direito no .exe -> Mostrar mais
+   opcoes -> Fixar na barra de tarefas.
+
+Contas de teste:
+  admin@custocerto.com.br     / admin123     (Administrador)
+  denilson@letscoffee.com.br  / gestor123    (Gestor)
+  marina@letscoffee.com.br    / operador123  (Operador)
+
+O config.properties precisa ficar na mesma pasta do .exe.

@@ -38,7 +38,7 @@ divisão eram a mesma grandeza e o resultado nunca mudava.
 | Acesso a dados (D1) | JDBC direto no MySQL | O requisito da POO pede que o sistema Java manipule o banco e acesse pela rede local. |
 | Interface (D7) | JavaFX | Sucessor do Swing, com estilização por CSS. Entra como dependência do Maven, sem SDK para instalar. |
 | Build | Maven, via wrapper | Resolve o driver JDBC e o JavaFX sozinho e gera o Javadoc em um comando. |
-| Balança | Dispositivo de rede | O ESP32 serve `GET /peso` e `POST /tara`; este app consulta direto, sem depender do servidor Node. |
+| Balança | Leitura via servidor | O ESP32 envia o peso para o servidor Java; o app lê o peso ao vivo em `GET /balanca/peso` e zera com `POST /balanca/tara`. |
 
 Detalhes em [`docs/arquitetura.md`](../docs/arquitetura.md).
 
@@ -108,9 +108,11 @@ copy config.properties.example config.properties   # Prompt / PowerShell
 - Desenvolvendo sozinho: `db.host=localhost`
 - Demonstrando o acesso via rede local: `db.host=` o IP da máquina que estiver
   servindo o banco (confirme com `ipconfig`, porque o IP muda de rede para rede)
-- `balanca.url=` o endereço da balança. O padrão usa mDNS
-  (`http://custocerto-balanca.local`); se a rede não repassar mDNS, use o IP que
-  aparece no monitor serial do ESP32.
+- `balanca.url=` o endereço do **servidor** da balança, com o caminho `/balanca`.
+  A balança (ESP32) envia o peso ao servidor Java, e o app lê o peso ao vivo de
+  lá. Aponte para o mesmo servidor do banco: `http://localhost:3000/balanca`
+  (sozinho) ou `http://<IP do servidor>:3000/balanca` na rede local (o mesmo IP
+  usado no `db.host`).
 
 O `config.properties` está no `.gitignore` — a sua senha não vai para o repositório.
 
@@ -280,8 +282,7 @@ explicar o `PreparedStatement` em todos os DAOs.
 
 ## O que ainda falta
 
-- Gravar e testar o firmware no ESP32. Ele compila, mas nunca rodou em placa —
-  então a tela da Balança nunca recebeu leitura real.
 - Abrir a porta 3306 no Firewall do Windows, para a demonstração de acesso via
-  rede local.
+  rede local. (A leitura da balança **não** precisa disso: o app consulta o
+  servidor por uma conexão de saída na porta 3000.)
 - Lotes de validade como entidade, o que destravaria a baixa por FIFO.

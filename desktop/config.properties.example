@@ -22,16 +22,11 @@ db.senha=SUA_SENHA_DO_MYSQL
 
 db.parametros=useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo&characterEncoding=UTF-8&connectTimeout=3000&socketTimeout=15000
 
-# Endereco da balanca na rede local.
-# A balanca e um dispositivo com API propria: o app pergunta o peso a ela
-# diretamente, sem depender do servidor Node. O padrao abaixo usa mDNS e
-# dispensa decorar o IP; se a rede nao repassar mDNS, troque pelo IP que
-# aparece no monitor serial do ESP32.
-# Com o firmware atual, a balanca envia o peso ao servidor Java do grupo
-# (PC do Lucas), e o app le de la. Troque pelo IP do servidor:
-#   balanca.url=http://10.108.212.250:3000/balanca
-balanca.url=http://custocerto-balanca.local
-
-# Endereco do servidor Node, do outro projeto. Nao e necessario para o
-# funcionamento do app -- fica aqui apenas para quem quiser apontar para ele.
-api.url=http://localhost:3000
+# Endereco de onde o app le o peso AO VIVO da balanca.
+# A balanca (ESP32) ENVIA o peso para o servidor Java, e o app consome esse
+# peso do servidor no endpoint /balanca/peso (e zera em /balanca/tara). Por isso
+# aponte para o MESMO servidor do banco, na porta 3000, com o caminho /balanca:
+#   - Desenvolvendo sozinho (servidor nesta maquina): http://localhost:3000/balanca
+#   - Em rede local: http://<IP do servidor>:3000/balanca  (o mesmo IP do db.host)
+# Obs.: e uma conexao de SAIDA, nao precisa liberar porta no Firewall do cliente.
+balanca.url=http://localhost:3000/balanca

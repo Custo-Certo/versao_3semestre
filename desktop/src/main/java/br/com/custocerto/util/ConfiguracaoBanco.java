@@ -19,6 +19,8 @@ import java.util.Properties;
  * <ol>
  *   <li>arquivo {@code config.properties} na pasta de execução — não versionado,
  *       é onde cada um coloca a sua senha;</li>
+ *   <li>arquivo {@code config.properties} ao lado do executável, quando o app
+ *       roda pelo {@code .exe} gerado com o jpackage;</li>
  *   <li>arquivo {@code config.properties} embutido no projeto
  *       ({@code src/main/resources}), com os valores padrão de desenvolvimento.</li>
  * </ol>
@@ -49,8 +51,8 @@ public final class ConfiguracaoBanco {
     private static Properties carregar() {
         Properties props = new Properties();
 
-        Path local = Path.of(ARQUIVO);
-        if (Files.exists(local)) {
+        Path local = localizarArquivoLocal();
+        if (local != null) {
             try (InputStream entrada = Files.newInputStream(local)) {
                 props.load(entrada);
                 System.out.println("[config] Configuração lida de " + local.toAbsolutePath());
@@ -72,6 +74,32 @@ public final class ConfiguracaoBanco {
         } catch (IOException e) {
             throw new IllegalStateException("Falha ao ler o arquivo " + ARQUIVO + " do projeto.", e);
         }
+    }
+
+    /**
+     * Procura o {@code config.properties} local: primeiro na pasta de execução,
+     * depois na pasta do executável gerado pelo jpackage.
+     *
+     * <p>A segunda busca existe porque o Windows nem sempre abre o programa na
+     * pasta dele: por atalho, pela barra de tarefas ou pela busca, a pasta de
+     * execução é outra, e o arquivo ao lado do {@code .exe} não seria achado.</p>
+     *
+     * @return o caminho do arquivo, ou {@code null} se não houver cópia local
+     */
+    private static Path localizarArquivoLocal() {
+        Path local = Path.of(ARQUIVO);
+        if (Files.exists(local)) {
+            return local;
+        }
+        // O jpackage informa o caminho do .exe nesta propriedade.
+        String executavel = System.getProperty("jpackage.app-path");
+        if (executavel != null) {
+            Path pasta = Path.of(executavel).getParent();
+            if (pasta != null && Files.exists(pasta.resolve(ARQUIVO))) {
+                return pasta.resolve(ARQUIVO);
+            }
+        }
+        return null;
     }
 
     /**

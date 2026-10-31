@@ -133,6 +133,19 @@ mvnw.cmd javafx:run     # Windows
 
 Ou duplo clique em `abrir-sistema.bat`, que liga o banco e abre o sistema.
 
+### Executável para Windows
+
+Duplo clique em `gerar-executavel.bat`. Ele gera, em `target/executavel/`:
+
+- `Custo Certo/Custo Certo.exe`: o programa, com o Java embutido. Quem recebe não
+  precisa instalar Java nem Maven.
+- `Custo-Certo-Windows.zip`: a mesma pasta compactada, para publicar em
+  **Releases** no GitHub. O zip não leva o `config.properties` de ninguém.
+
+Quem baixa o zip copia `config.properties.example` para `config.properties`, na
+mesma pasta do `.exe`, e preenche a conexão. As instruções vão junto, no
+`LEIA-ME.txt`. Precisa de um JDK 21 ou mais novo para gerar.
+
 ---
 
 ## Abrindo no Eclipse

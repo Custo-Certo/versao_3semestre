@@ -12,6 +12,7 @@ Nao precisa instalar Java nem Maven: o programa ja traz tudo.
        db.host=10.108.212.250
        db.usuario=custocerto
        db.senha=  (peca ao Lucas)
+       balanca.url=http://10.108.212.250:3000/balanca
 
      Usando o MySQL do seu proprio PC:
        db.host=localhost

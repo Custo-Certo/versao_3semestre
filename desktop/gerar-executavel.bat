@@ -29,7 +29,14 @@ if not defined JPACKAGE (
 )
 echo   jpackage: %JPACKAGE%
 
-rem ----- 2. Compilar e juntar as bibliotecas -----
+rem ----- 2. O app nao pode estar aberto: o Windows trava os arquivos -----
+tasklist /fi "imagename eq %NOME%.exe" 2>nul | find /i "%NOME%.exe" >nul
+if not errorlevel 1 (
+    echo   [ERRO] O Custo Certo esta aberto. Feche todas as janelas dele e rode de novo.
+    goto fim
+)
+
+rem ----- 3. Compilar e juntar as bibliotecas -----
 echo   [1/3] Compilando o app...
 if exist "%ENTRADA%" rmdir /s /q "%ENTRADA%"
 call "%~dp0mvnw.cmd" -q package dependency:copy-dependencies -DoutputDirectory=%ENTRADA% -DincludeScope=runtime -DskipTests
@@ -39,7 +46,7 @@ if errorlevel 1 (
 )
 copy /y target\custo-certo-desktop-1.0.0.jar "%ENTRADA%\" >nul
 
-rem ----- 3. Montar o executavel -----
+rem ----- 4. Montar o executavel -----
 echo   [2/3] Montando o executavel...
 if exist "%SAIDA%" rmdir /s /q "%SAIDA%"
 "%JPACKAGE%" --type app-image --name "%NOME%" --app-version 1.0.0 ^
@@ -56,7 +63,7 @@ if errorlevel 1 (
 copy /y config.properties.example "%SAIDA%\%NOME%\" >nul
 copy /y empacotamento\LEIA-ME.txt "%SAIDA%\%NOME%\" >nul
 
-rem ----- 4. Compactar, sem a senha de ninguem -----
+rem ----- 5. Compactar, sem a senha de ninguem -----
 echo   [3/3] Compactando...
 powershell -NoProfile -Command "Compress-Archive -Path '%SAIDA%\%NOME%' -DestinationPath '%SAIDA%\Custo-Certo-Windows.zip' -Force"
 

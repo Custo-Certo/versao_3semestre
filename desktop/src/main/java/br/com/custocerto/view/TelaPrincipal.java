@@ -2,6 +2,7 @@ package br.com.custocerto.view;
 
 import br.com.custocerto.model.Usuario;
 import br.com.custocerto.service.EstoqueService;
+import br.com.custocerto.service.ExecucaoReceitaService;
 import br.com.custocerto.service.AnaliseService;
 import br.com.custocerto.service.FichaTecnicaService;
 import br.com.custocerto.service.UsuarioService;
@@ -49,6 +50,7 @@ public class TelaPrincipal {
     private final FichaTecnicaService servicoCardapio = new FichaTecnicaService();
     private final VendaService servicoVendas = new VendaService();
     private final AnaliseService servicoAnalise = new AnaliseService();
+    private final ExecucaoReceitaService servicoReceitas = new ExecucaoReceitaService();
 
     /** Cor dos ícones e rótulos inativos do menu. */
     private static final javafx.scene.paint.Color COR_APAGADA =
@@ -69,6 +71,7 @@ public class TelaPrincipal {
     private PaginaEvolucao evolucao;
     private PaginaFichaTecnica fichaTecnica;
     private PaginaVendas vendas;
+    private PaginaReceitas receitas;
     private PaginaMargem margem;
     private PaginaUsuarios usuarios;
 
@@ -133,6 +136,9 @@ public class TelaPrincipal {
 
             vendas = new PaginaVendas(servicoVendas, servicoCardapio, this::atualizarTudo);
             adicionarItem("Vendas", "vendas", vendas);
+
+            receitas = new PaginaReceitas(servicoReceitas, servico, this::atualizarTudo);
+            adicionarItem("Receitas", "receita", receitas);
 
             if (indicadores) {
                 fichaTecnica = new PaginaFichaTecnica(
@@ -330,6 +336,9 @@ public class TelaPrincipal {
         }
         if (vendas != null) {
             vendas.atualizar();
+        }
+        if (receitas != null) {
+            receitas.atualizar();
         }
         if (margem != null) {
             margem.atualizar();

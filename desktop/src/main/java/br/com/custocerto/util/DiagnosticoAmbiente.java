@@ -92,8 +92,48 @@ public final class DiagnosticoAmbiente {
             System.out.println("     itens em alerta...: " + resumo.getItensEmAlerta());
             System.out.println("     vencidos..........: " + resumo.getItensVencidos());
             System.out.println("     vencendo em 5 dias: " + resumo.getItensVencendo());
-            System.out.printf ("     CMV estimado......: %.1f%% (%s)%n",
-                    resumo.getPercentualCmv(), resumo.getRotuloCmv());
+            System.out.println("     perda por venc....: R$ " + resumo.getValorVencido());
+
+            // Indicadores financeiros do periodo. Antes havia aqui um "CMV
+            // estimado" que era constante: a receita era o proprio custo vezes
+            // 3,5, entao a divisao dava sempre 1/3,5. Agora os dois lados sao
+            // medidos, e por isso o diagnostico so os exibe se houver venda.
+            var analise = new br.com.custocerto.service.AnaliseService();
+            var periodo = br.com.custocerto.model.Periodo.ultimosDias(90);
+            var financeiro = analise.resumoDoPeriodo(periodo);
+
+            System.out.println("\n   Financeiro nos ultimos 90 dias (" + periodo + "):");
+            System.out.println("     faturamento.......: R$ " + financeiro.getReceita());
+            System.out.println("     custo pela ficha..: R$ " + financeiro.getCustoTeorico());
+            System.out.println("     custo medido......: R$ " + financeiro.getCustoReal());
+            System.out.println("     compras...........: R$ " + financeiro.getCompras());
+
+            if (financeiro.temVendas()) {
+                System.out.printf ("     CMV...............: %.1f%% (%s)%n",
+                        financeiro.getCmvTeorico(), financeiro.getRotuloCmv());
+                System.out.println("     margem bruta......: R$ " + financeiro.getMargemBruta());
+                System.out.println("     ticket medio......: R$ " + financeiro.getTicketMedio());
+            } else {
+                System.out.println("     CMV...............: sem vendas no periodo");
+            }
+
+            var variancias = analise.variancias(periodo);
+            System.out.println("\n   Consumo teorico x real:");
+            if (variancias.isEmpty()) {
+                System.out.println("     nenhum insumo com movimento no periodo");
+            }
+            for (var v : variancias) {
+                if (v.isSemBaixaRegistrada()) {
+                    System.out.printf("     - %-26s nao passa pela balanca%n", v.getNome());
+                } else {
+                    System.out.printf("     - %-26s teorico %8s  real %8s  %+.1f%%  R$ %s%n",
+                            v.getNome(),
+                            v.getTeorico().stripTrailingZeros().toPlainString(),
+                            v.getReal().stripTrailingZeros().toPlainString(),
+                            v.getPercentual(),
+                            v.getCustoDiferenca());
+                }
+            }
 
             System.out.println("\n6. Transação: retirada maior que o estoque deve ser desfeita");
             var alvo = insumos.get(0);
@@ -114,7 +154,8 @@ public final class DiagnosticoAmbiente {
                     + depois.getQtd().stripTrailingZeros().toPlainString()
                     + " " + alvo.getUnidade().getSigla() + " — nada foi gravado pela metade.");
 
-        } catch (br.com.custocerto.service.EstoqueException e) {
+        } catch (br.com.custocerto.service.EstoqueException
+                 | br.com.custocerto.service.CardapioException e) {
             System.out.println("   FALHOU: " + e.getMessage());
         }
 

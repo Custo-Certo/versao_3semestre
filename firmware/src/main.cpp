@@ -51,13 +51,12 @@
 const unsigned long INTERVALO_LEITURA_MS = 100;     // envia peso ~10x/s
 const unsigned long WIFI_TIMEOUT_MS      = 20000;
 
-// Suavização por média móvel exponencial, feita aqui em software.
-// Substitui o scale.get_units(5), que travava o laço por meio segundo
-// esperando cinco amostras do chip. Com uma amostra só e este filtro, a
-// leitura fica igualmente estável e chega cinco vezes mais rápido.
-// Quanto menor o peso do filtro, mais suave e mais lento; 0.35 equilibra
-// tremor de leitura e resposta ao colocar o insumo na balança.
-const float SUAVIZACAO = 0.35f;
+// Zona morta (deadband): em vez de suavizar (que faria o valor "subir aos
+// poucos"), o peso só é ATUALIZADO quando muda mais que este limite. Assim a
+// leitura responde na hora quando você põe/tira algo, mas fica CRAVADA quando
+// o peso está parado — sem o tremor de ±1 g do ruído do HX711.
+// Aumente se ainda tremer; diminua para captar variações menores. 0.002 = 2 g.
+const float DEADBAND_KG = 0.002f;
 
 // =====================================================
 // ESTADO GLOBAL
@@ -228,9 +227,11 @@ void loop() {
     if (primeiraLeitura) {
       pesoSuavizado = bruto;
       primeiraLeitura = false;
-    } else {
-      pesoSuavizado = (SUAVIZACAO * bruto) + ((1.0f - SUAVIZACAO) * pesoSuavizado);
+    } else if (fabs(bruto - pesoSuavizado) >= DEADBAND_KG) {
+      // Mudança real (acima da zona morta): atualiza imediatamente.
+      pesoSuavizado = bruto;
     }
+    // Caso contrário, mantém o valor anterior (ignora o tremor de repouso).
 
     char body[64];
     snprintf(body, sizeof(body), "{\"peso\":%.3f}", pesoSuavizado);

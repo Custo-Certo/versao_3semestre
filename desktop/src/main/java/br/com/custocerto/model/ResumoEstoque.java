@@ -28,7 +28,7 @@ import java.util.List;
  * das fichas técnicas e das movimentações de estoque.</p>
  *
  * @author Equipe Custo Certo - FATEC Indaiatuba
- * @version 2.0
+ * @version 1.0
  */
 public class ResumoEstoque {
 

@@ -45,7 +45,7 @@ import javafx.scene.paint.Color;
  * </ol>
  *
  * @author Equipe Custo Certo - FATEC Indaiatuba
- * @version 2.0
+ * @version 1.0
  */
 public class PaginaDashboard extends VBox {
 

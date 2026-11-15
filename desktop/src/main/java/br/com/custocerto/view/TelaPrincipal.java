@@ -234,7 +234,7 @@ public class TelaPrincipal {
         Region esp = new Region();
         VBox.setVgrow(esp, Priority.ALWAYS);
 
-        Label rodape = new Label("Custo Certo v2.0 · FATEC Indaiatuba");
+        Label rodape = new Label("Custo Certo v1.0.0 · FATEC Indaiatuba");
         rodape.getStyleClass().add("rodape-lateral");
         rodape.setWrapText(true);
         rodape.setPadding(new Insets(12, 18, 16, 18));

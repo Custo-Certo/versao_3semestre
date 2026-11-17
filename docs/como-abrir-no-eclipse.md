@@ -59,7 +59,7 @@ A janela deve mostrar:
 
 ```
 Projects:
-  [x] /pom.xml   br.com.custocerto:custo-certo-desktop:2.1.0:jar
+  [x] /pom.xml   br.com.custocerto:custo-certo-desktop:2.1.1:jar
 ```
 
 ## 7. Esperar o m2e baixar as dependências

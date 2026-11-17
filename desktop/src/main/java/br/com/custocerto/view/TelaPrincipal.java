@@ -9,6 +9,7 @@ import br.com.custocerto.service.UsuarioService;
 import br.com.custocerto.service.VendaService;
 import br.com.custocerto.util.ConfiguracaoBanco;
 import br.com.custocerto.util.Sessao;
+import br.com.custocerto.util.Versao;
 import java.util.ArrayList;
 import java.util.List;
 import javafx.geometry.Insets;
@@ -234,7 +235,7 @@ public class TelaPrincipal {
         Region esp = new Region();
         VBox.setVgrow(esp, Priority.ALWAYS);
 
-        Label rodape = new Label("Custo Certo v2.0 · FATEC Indaiatuba");
+        Label rodape = new Label("Custo Certo v" + Versao.atual() + " · FATEC Indaiatuba");
         rodape.getStyleClass().add("rodape-lateral");
         rodape.setWrapText(true);
         rodape.setPadding(new Insets(12, 18, 16, 18));

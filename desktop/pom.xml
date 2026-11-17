@@ -8,7 +8,7 @@
   <!-- Coordenadas do projeto: identificam o artefato de forma unica no Maven. -->
   <groupId>br.com.custocerto</groupId>
   <artifactId>custo-certo-desktop</artifactId>
-  <version>2.1.0</version>
+  <version>2.1.1</version>
   <packaging>jar</packaging>
 
   <name>Custo Certo - Desktop</name>
@@ -56,6 +56,25 @@
   </dependencies>
 
   <build>
+    <!-- So o versao.properties e filtrado (recebe o <version> acima); os demais
+         recursos, como os scripts SQL, sao copiados sem alteracao. -->
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>versao.properties</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>versao.properties</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <!-- Compilacao das classes Java. -->
       <plugin>

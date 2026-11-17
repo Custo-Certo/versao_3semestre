@@ -44,14 +44,14 @@ if errorlevel 1 (
     echo   [ERRO] A compilacao falhou.
     goto fim
 )
-copy /y target\custo-certo-desktop-1.0.0.jar "%ENTRADA%\" >nul
+copy /y target\custo-certo-desktop-2.0.0.jar "%ENTRADA%\" >nul
 
 rem ----- 4. Montar o executavel -----
 echo   [2/3] Montando o executavel...
 if exist "%SAIDA%" rmdir /s /q "%SAIDA%"
-"%JPACKAGE%" --type app-image --name "%NOME%" --app-version 1.0.0 ^
+"%JPACKAGE%" --type app-image --name "%NOME%" --app-version 2.0.0 ^
     --vendor "Equipe Custo Certo - FATEC Indaiatuba" ^
-    --input "%ENTRADA%" --main-jar custo-certo-desktop-1.0.0.jar ^
+    --input "%ENTRADA%" --main-jar custo-certo-desktop-2.0.0.jar ^
     --main-class br.com.custocerto.Launcher ^
     --icon empacotamento\custo-certo.ico ^
     --java-options "-Dfile.encoding=UTF-8" ^

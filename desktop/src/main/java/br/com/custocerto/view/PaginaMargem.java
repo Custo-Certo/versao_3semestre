@@ -5,13 +5,20 @@ import br.com.custocerto.model.Periodo;
 import br.com.custocerto.model.VarianciaInsumo;
 import br.com.custocerto.service.AnaliseService;
 import br.com.custocerto.service.CardapioException;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -19,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 
 /**
  * Página de margem e desperdício — onde o dinheiro está sendo feito e perdido.
@@ -41,6 +49,9 @@ import javafx.scene.layout.VBox;
  * sistemas de gestão só consegue estimar o consumo, porque não mede nada — este
  * mede, e por isso consegue apontar o problema insumo por insumo, em reais.</p>
  *
+ * <p>As duas tabelas do período escolhido podem ser exportadas em CSV, separado
+ * por ponto e vírgula e com vírgula decimal, para abrir direto no Excel.</p>
+ *
  * @author Equipe Custo Certo - FATEC Indaiatuba
  * @version 1.0
  */
@@ -50,6 +61,12 @@ public class PaginaMargem extends VBox {
     private final ChoiceBox<OpcaoPeriodo> filtro = new ChoiceBox<>();
     private final VBox conteudo = new VBox(16);
     private final Label subtitulo = new Label();
+
+    /** Os produtos da última atualização, guardados para a exportação. */
+    private List<DesempenhoProduto> ultimosProdutos = List.of();
+
+    /** As variâncias da última atualização, guardadas para a exportação. */
+    private List<VarianciaInsumo> ultimasVariancias = List.of();
 
     /**
      * Uma opção do seletor de período.
@@ -89,7 +106,11 @@ public class PaginaMargem extends VBox {
         Region espaco = new Region();
         HBox.setHgrow(espaco, Priority.ALWAYS);
 
-        HBox cabecalho = new HBox(12, textos, espaco, filtro);
+        Button exportar = new Button("Exportar CSV");
+        exportar.getStyleClass().add("botao-secundario");
+        exportar.setOnAction(e -> exportarCsv());
+
+        HBox cabecalho = new HBox(12, textos, espaco, exportar, filtro);
         cabecalho.setAlignment(Pos.CENTER_LEFT);
 
         ScrollPane rolagem = new ScrollPane(conteudo);
@@ -108,10 +129,14 @@ public class PaginaMargem extends VBox {
         conteudo.getChildren().clear();
         Periodo periodo = filtro.getValue().periodo();
         subtitulo.setText(periodo.toString());
+        ultimosProdutos = List.of();
+        ultimasVariancias = List.of();
 
         try {
             List<DesempenhoProduto> produtos = servico.desempenhoDoCardapio(periodo);
             List<VarianciaInsumo> variancias = servico.variancias(periodo);
+            ultimosProdutos = produtos;
+            ultimasVariancias = variancias;
 
             conteudo.getChildren().addAll(
                     montarQuadrantes(produtos),
@@ -375,6 +400,112 @@ public class PaginaMargem extends VBox {
         linha.setAlignment(Pos.CENTER_LEFT);
         linha.setPadding(new Insets(9, 12, 9, 12));
         return linha;
+    }
+
+    // ---------------------------------------------------------------- exportação
+
+    /**
+     * Exporta para CSV as tabelas de desempenho por produto e de consumo
+     * teórico × real do período exibido.
+     *
+     * <p>O arquivo sai em UTF-8 com BOM, separado por ponto e vírgula e com
+     * vírgula decimal, que é o formato que o Excel em português abre sem
+     * assistente de importação.</p>
+     */
+    private void exportarCsv() {
+        if (ultimosProdutos.isEmpty() && ultimasVariancias.isEmpty()) {
+            Dialogos.erro("Não há dados no período escolhido para exportar.");
+            return;
+        }
+
+        FileChooser escolha = new FileChooser();
+        escolha.setTitle("Exportar margem e desperdício");
+        escolha.setInitialFileName("custo-certo-margem-" + LocalDate.now() + ".csv");
+        escolha.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Planilha CSV (*.csv)", "*.csv"));
+        File destino = escolha.showSaveDialog(getScene() == null ? null : getScene().getWindow());
+        if (destino == null) {
+            return;
+        }
+
+        try (BufferedWriter saida = Files.newBufferedWriter(destino.toPath(), StandardCharsets.UTF_8)) {
+            saida.write('\uFEFF');
+            linhaCsv(saida, "Custo Certo - Margem e Desperdício");
+            linhaCsv(saida, "Período", filtro.getValue().rotulo(), subtitulo.getText());
+            saida.newLine();
+
+            linhaCsv(saida, "Desempenho por Produto");
+            linhaCsv(saida, "Produto", "Vendidas", "Preço médio (R$)", "Custo (R$)",
+                    "Margem un. (R$)", "Margem total (R$)", "Custo %", "Quadrante");
+            for (DesempenhoProduto p : ultimosProdutos) {
+                boolean ficha = p.isTemFicha();
+                boolean classificado = ficha && p.getUnidadesVendidas() > 0;
+                linhaCsv(saida,
+                        p.getNome(),
+                        String.valueOf(p.getUnidadesVendidas()),
+                        Formatos.numero(p.getPrecoMedio()),
+                        ficha ? Formatos.numero(p.getCustoUnitario()) : "sem ficha",
+                        ficha ? Formatos.numero(p.getMargemUnitaria()) : "",
+                        ficha ? Formatos.numero(p.getMargemTotal()) : "",
+                        ficha ? Formatos.percentual(p.getPercentualCusto()) : "",
+                        classificado ? p.getQuadrante().getTitulo() : "fora da classificação");
+            }
+            saida.newLine();
+
+            linhaCsv(saida, "Consumo Teórico x Real");
+            linhaCsv(saida, "Insumo", "Unidade", "Teórico", "Real", "Diferença",
+                    "Variação %", "Custo da diferença (R$)", "Leitura");
+            for (VarianciaInsumo v : ultimasVariancias) {
+                String sigla = v.getUnidade() == null ? "" : v.getUnidade().getSigla();
+                if (v.isSemBaixaRegistrada()) {
+                    linhaCsv(saida, v.getNome(), sigla, Formatos.quantidade(v.getTeorico()),
+                            "", "", "", "", "sem consumo real registrado");
+                    continue;
+                }
+                linhaCsv(saida,
+                        v.getNome(),
+                        sigla,
+                        Formatos.quantidade(v.getTeorico()),
+                        Formatos.quantidade(v.getReal()),
+                        Formatos.quantidade(v.getDiferenca()),
+                        Formatos.percentual(v.getPercentual()),
+                        Formatos.numero(v.getCustoDiferenca()),
+                        switch (v.getClassificacao()) {
+                            case "bom" -> "controlado";
+                            case "tipico" -> "aceitável";
+                            default -> "investigar";
+                        });
+            }
+        } catch (IOException e) {
+            Dialogos.erro("Não foi possível gravar o arquivo: " + e.getMessage());
+            return;
+        }
+
+        Dialogos.sucesso("Arquivo exportado em " + destino.getAbsolutePath());
+    }
+
+    /**
+     * Grava uma linha do CSV, protegendo os campos que contêm o separador,
+     * aspas ou quebra de linha.
+     *
+     * @param saida  o arquivo de destino
+     * @param campos os valores da linha
+     * @throws IOException se a gravação falhar
+     */
+    private static void linhaCsv(BufferedWriter saida, String... campos) throws IOException {
+        StringBuilder linha = new StringBuilder();
+        for (int i = 0; i < campos.length; i++) {
+            if (i > 0) {
+                linha.append(';');
+            }
+            String campo = campos[i] == null ? "" : campos[i];
+            if (campo.contains(";") || campo.contains("\"") || campo.contains("\n")) {
+                campo = "\"" + campo.replace("\"", "\"\"") + "\"";
+            }
+            linha.append(campo);
+        }
+        saida.write(linha.toString());
+        saida.newLine();
     }
 
     // ---------------------------------------------------------------- auxiliares
